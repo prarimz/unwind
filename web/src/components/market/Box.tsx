@@ -16,7 +16,7 @@ import type { ReactNode } from "react";
  * The seam flares into a curve where corners meet, so the page reads as the
  * same set of parts as the bar above it rather than cards floated on a tray.
  */
-export const PANEL = "rounded-[14px] border-b border-line bg-panel";
+export const PANEL = "rounded-[10px] border-b border-line bg-panel";
 
 export function Box({ title, aside, children, className = "", bodyClassName = "" }: {
   title?: ReactNode;
@@ -53,7 +53,7 @@ export function Tile({ label, children, tone = "" }: {
   label: string; children: ReactNode; tone?: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-line bg-panel px-5 py-5">
+    <div className="rounded-[10px] border border-line bg-panel px-5 py-5">
       <div className="text-[13px] text-muted-foreground">{label}</div>
       <div className={`n mt-4 truncate text-[20px] font-medium tracking-[-.01em] ${tone}`}>
         {children}

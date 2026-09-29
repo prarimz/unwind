@@ -11,10 +11,10 @@ export const REPO = "https://github.com/prarimz/unwind";
 /// The two button looks, after the /list card: an inverted pill for the one
 /// thing a page wants you to do, and an outlined pill for everything else.
 export const SOLID =
-  "press rounded-full bg-foreground px-5 py-2.5 text-[13.5px] font-medium " +
+  "press rounded-[8px] bg-foreground px-5 py-2.5 text-[13.5px] font-medium " +
   "text-background transition-opacity hover:opacity-90";
 export const OUTLINE =
-  "press rounded-full border border-line px-5 py-2.5 text-[13.5px] " +
+  "press rounded-[8px] border border-line px-5 py-2.5 text-[13.5px] " +
   "font-medium transition-colors hover:border-foreground/40";
 
 /// beUI's pill tabs in the house look: no track, and the sliding indicator
@@ -125,7 +125,7 @@ export function SiteHeader({ here, tradeHref = "/trade", actions }: {
                              border-line bg-panel2">
               <img src="/waitlist/logo-glass-mark.webp" alt="" className="h-[30px] w-[30px]" />
             </span>
-            <span className="ml-1 hidden rounded-full border border-brand/40 bg-brand/10 px-2 py-[3px]
+            <span className="ml-1 hidden rounded-[5px] border border-brand/40 bg-brand/10 px-2 py-[3px]
                              text-[10.5px] font-medium leading-none tracking-[.02em] text-foreground/85 md:block">
               {backend === true ? "Devnet" : "Beta"}
             </span>
@@ -142,7 +142,7 @@ export function SiteHeader({ here, tradeHref = "/trade", actions }: {
               <a key={l.href} href={l.href === "/trade" ? tradeHref : l.href}
                 {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
                 aria-current={here === l.href ? "page" : undefined}
-                className={`flex h-[46px] flex-none items-center gap-2 rounded-full border px-4
+                className={`flex h-[46px] flex-none items-center gap-2 rounded-[10px] border px-4
                             text-[15px] transition-colors sm:px-4 ${here === l.href
                   ? "border-line bg-panel2 font-medium text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"}`}>
@@ -208,14 +208,14 @@ export function PageMenu({ here, tradeHref = "/trade", className = "" }: {
       </button>
       {open && (
         <nav aria-label="Pages"
-          className="absolute inset-x-2 top-full z-40 mt-2 grid gap-1 rounded-[14px] border border-line
+          className="absolute inset-x-2 top-full z-40 mt-2 grid gap-1 rounded-[10px] border border-line
                      bg-panel p-2 shadow-[0_18px_40px_-12px_rgba(0,0,0,.55)]">
           {NAV.map((l) => (
             <a key={l.href} href={l.href === "/trade" ? tradeHref : l.href}
               {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
               aria-current={here === l.href ? "page" : undefined}
               onClick={() => setOpen(false)}
-              className={`flex h-[52px] items-center gap-3 rounded-[10px] px-4 text-[16px] transition-colors ${
+              className={`flex h-[52px] items-center gap-3 rounded-[8px] px-4 text-[16px] transition-colors ${
                 here === l.href ? "bg-panel2 font-medium text-foreground"
                   : "text-muted-foreground hover:bg-panel2 hover:text-foreground"}`}>
               <l.Icon size={19} strokeWidth={1.8} aria-hidden />

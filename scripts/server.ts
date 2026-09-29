@@ -3019,13 +3019,29 @@ function apyOf(get: (r: TapeRow) => number | undefined) {
   return { apy: (now / get(first)! - 1) * (8760 / hours) * 100, hours };
 }
 
+/// The tape itself, thinned to a few hundred points, as `[seconds, value per
+/// share]`. The page draws it; a rate with no line behind it is a claim.
+const SERIES_POINTS = 240;
+function seriesOf(get: (r: TapeRow) => number | undefined): [number, number][] {
+  const rows = tape.filter((r) => (get(r) ?? 0) > 0);
+  if (rows.length < 2) return [];
+  const step = Math.max(1, Math.floor(rows.length / SERIES_POINTS));
+  return rows
+    .filter((_, i) => i % step === 0 || i === rows.length - 1)
+    .map((r) => [Math.round(r.t / 1000), get(r)!]);
+}
+
 app.get("/api/apy", (_req, res) => {
   const markets: Record<string, { apy: number | null; hours: number }> = {};
+  const series: Record<string, [number, number][]> = {};
   for (const m of Object.values(rt)) {
     const a = apyOf((r) => r.markets[m.symbol]);
-    if (a) markets[m.symbol] = a;
+    if (a) { markets[m.symbol] = a; series[m.symbol] = seriesOf((r) => r.markets[m.symbol]); }
   }
-  res.json({ pool: apyOf((r) => r.pool), markets });
+  res.json({
+    pool: apyOf((r) => r.pool), markets,
+    series: { pool: seriesOf((r) => r.pool), markets: series },
+  });
 });
 
 app.post("/api/tx/order", async (req, res) => {

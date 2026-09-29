@@ -31,7 +31,7 @@ export function WalletActions() {
        * put under the most inviting target in the bar -- an address is
        * something you reach for to copy or to look up.
        */
-      <div className="flex h-[44px] items-center gap-1 rounded-full border border-line pl-4 pr-2">
+      <div className="flex h-[44px] items-center gap-1 rounded-[12px] border border-line pl-4 pr-2">
         <span className="size-1.5 flex-none rounded-full bg-up" />
         <AddressDisplay address={address} truncateChars={[4, 4]} copyable
           explorerUrl="https://solscan.io/account"

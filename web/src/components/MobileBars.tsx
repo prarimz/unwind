@@ -41,13 +41,13 @@ export function MobileBars({
       <div className="grid grid-cols-2 gap-2.5 px-4 py-2.5">
         <button onClick={() => onTrade("long")}
           className="press flex min-h-[48px] flex-col items-center justify-center gap-0.5
-                     rounded-full bg-foreground text-background transition-opacity hover:opacity-90">
+                     rounded-[10px] bg-foreground text-background transition-opacity hover:opacity-90">
           <span className="text-[14px] font-medium leading-none">Buy / Long</span>
           <span className="n text-[11px] leading-none opacity-60">{m.ask.toFixed(2)}</span>
         </button>
         <button onClick={() => onTrade("short")}
           className="press flex min-h-[48px] flex-col items-center justify-center gap-0.5
-                     rounded-full border border-line text-foreground transition-colors
+                     rounded-[10px] border border-line text-foreground transition-colors
                      hover:border-foreground/40">
           <span className="text-[14px] font-medium leading-none">Sell / Short</span>
           <span className="n text-[11px] leading-none text-muted-foreground">{m.bid.toFixed(2)}</span>
@@ -61,7 +61,7 @@ export function MobileBars({
           return (
             <button key={v} onClick={() => onView(v)}
               aria-current={on ? "page" : undefined}
-              className={`press flex h-10 items-center justify-center gap-1.5 rounded-full
+              className={`press flex h-10 items-center justify-center gap-1.5 rounded-[8px]
                           text-[13px] transition-colors duration-150
                           ${on ? "bg-foreground font-medium text-background"
                                : "text-muted-foreground hover:text-foreground"}`}>

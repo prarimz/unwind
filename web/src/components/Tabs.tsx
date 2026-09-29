@@ -3,59 +3,73 @@ import {
   Tabs as BeTabs, TabsContent, TabsList as BeTabsList, TabsTrigger as BeTabsTrigger,
 } from "@/components/motion/tabs";
 import { cn } from "@/lib/utils";
-import { PILL_INDICATOR, PILL_LIST, PILL_TRIGGER } from "@/site/Chrome";
 
 /*
- * beUI's tabs, in the house pill look.
+ * beUI's tabs, in the house look.
  *
- * The classes are the site's own (`PILL_*` in Chrome), so every tab row on
- * /trade is the same control as the ones on /list and /earn: no track, and
- * the selected tab an inverted pill that slides between the options. Wrapped
- * once so the rows on this page cannot drift apart.
+ * Three rows, one control. The default is text on a hairline, the selected
+ * label underlined, which is how every ledger page and the venues people
+ * already trade on switch between tables. `soft` is a quiet segmented
+ * control for the settings beside data (the chart's timeframes, the book's
+ * views): a tinted track with the chosen option a lighter block inside it.
+ * `fill` is the same track with the chosen option filled solid, for the one
+ * switch that has to shout, the ticket's long or short. Wrapped once so the
+ * rows on /trade cannot drift apart from each other or from the site.
  */
+type Look = "underline" | "soft" | "fill";
+
 export function Tabs({
-  value, defaultValue, onValueChange, children, className,
+  value, defaultValue, onValueChange, children, className, look = "underline",
 }: {
   value?: string; defaultValue?: string; onValueChange?: (v: string) => void;
-  children: ReactNode; className?: string;
+  children: ReactNode; className?: string; look?: Look;
 }) {
   return (
-    <BeTabs variant="pill" value={value} defaultValue={defaultValue}
-      onValueChange={onValueChange} className={className}>
+    <BeTabs variant={look === "underline" ? "underline" : "pill"} value={value}
+      defaultValue={defaultValue} onValueChange={onValueChange} className={className}>
       {children}
     </BeTabs>
   );
 }
 
-/*
- * `soft` is the quiet row: a tinted track with the selected option a lighter
- * chip inside it, rather than an inverted pill. For controls that sit beside
- * data (the chart's timeframes) and should not outshout it.
- */
-const SOFT_LIST = "rounded-full bg-panel2 p-1 gap-0.5";
-const SOFT_TRIGGER =
-  "h-8 px-3.5 text-[13px] font-normal [&_[data-tabs-label]]:font-medium " +
-  "[&_[data-tabs-label]]:text-foreground";
-const SOFT_INDICATOR = "bg-panel3";
+const LIST: Record<Look, string> = {
+  underline: "gap-0 border-0",
+  soft: "rounded-[8px] bg-panel2 p-0.5 gap-0",
+  fill: "rounded-[8px] border border-line p-0.5 gap-0",
+};
+const TRIGGER: Record<Look, string> = {
+  underline: "min-h-[36px] px-3 pb-2 pt-2 text-[12.5px] font-medium first:pl-0",
+  soft: "h-7 px-3 text-[12.5px] font-normal rounded-[6px] [&_[data-tabs-label]]:font-medium " +
+    "[&_[data-tabs-label]]:text-foreground",
+  fill: "h-9 px-3 text-[13.5px] font-normal rounded-[6px] [&_[data-tabs-label]]:font-medium " +
+    "[&_[data-tabs-label]]:text-background",
+};
+const INDICATOR: Record<Look, string> = {
+  underline: "bg-foreground",
+  soft: "rounded-[6px] bg-panel3",
+  fill: "rounded-[6px] bg-foreground",
+};
 
-export function TabsList({ children, className, soft = false }: {
-  children: ReactNode; className?: string; soft?: boolean;
+/// `soft` is kept as a boolean for the rows that already ask for it.
+const lookOf = (soft: boolean | undefined, look: Look | undefined): Look =>
+  look ?? (soft ? "soft" : "underline");
+
+export function TabsList({ children, className, soft, look }: {
+  children: ReactNode; className?: string; soft?: boolean; look?: Look;
 }) {
   return (
-    <BeTabsList className={cn(soft ? SOFT_LIST : cn(PILL_LIST, "gap-1"), className)}>
-      {children}
-    </BeTabsList>
+    <BeTabsList className={cn(LIST[lookOf(soft, look)], className)}>{children}</BeTabsList>
   );
 }
 
 /// `className` sizes a row that needs it (the ticket's full-width side
 /// switch, the book's narrow column); the look itself stays the shared one.
-export function TabsTrigger({ value, children, className, soft = false }: {
-  value: string; children: ReactNode; className?: string; soft?: boolean;
+export function TabsTrigger({ value, children, className, soft, look }: {
+  value: string; children: ReactNode; className?: string; soft?: boolean; look?: Look;
 }) {
+  const l = lookOf(soft, look);
   return (
-    <BeTabsTrigger value={value} className={cn(soft ? SOFT_TRIGGER : PILL_TRIGGER, className)}
-      indicatorClassName={soft ? SOFT_INDICATOR : PILL_INDICATOR}>
+    <BeTabsTrigger value={value} className={cn(TRIGGER[l], className)} indicatorClassName={INDICATOR[l]}>
       {children}
     </BeTabsTrigger>
   );

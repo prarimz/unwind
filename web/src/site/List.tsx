@@ -24,7 +24,7 @@ import {
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import {
-  DOCS, PILL_INDICATOR, PILL_LIST, PILL_TRIGGER, Shell, SiteFooter, SiteHeader,
+  DOCS, Shell, SiteFooter, SiteHeader,
 } from "@/site/Chrome";
 import { PayToken } from "@/components/PayToken";
 import { Mark } from "@/components/Brand";
@@ -52,7 +52,7 @@ import {
 const NONE: Market[] = [];
 
 const FIELD =
-  "w-full rounded-[10px] border border-line bg-panel2 px-3.5 text-[13.5px] outline-none " +
+  "w-full rounded-[8px] border border-line bg-panel2 px-3.5 text-[13.5px] outline-none " +
   "transition-colors placeholder:text-dim focus:border-brand";
 
 /// Round numbers for a listing's backing. Smaller than a backer's, because
@@ -62,6 +62,9 @@ const LIST_QUICK: Record<PayWith, number[]> = {
 };
 
 const short = (a: string) => `${a.slice(0, 4)}…${a.slice(-4)}`;
+
+/// The title row's tabs: text on a hairline, as every page's tables switch.
+const TAB = "min-h-[40px] px-3 pb-2 pt-1 text-[13px] font-medium first:pl-0 last:pr-0";
 const unitWords = (e: number) =>
   ({ 3: "1,000", 6: "1,000,000", 9: "1,000,000,000" } as Record<number, string>)[e] ?? `10^${e}`;
 
@@ -81,7 +84,7 @@ function Fieldset({ legend, aside, locked, children }: {
 }) {
   return (
     <fieldset inert={locked || undefined}
-      className={`min-w-0 rounded-[16px] border border-line px-4 pb-4 pt-2 transition-opacity
+      className={`min-w-0 rounded-[10px] border border-line px-4 pb-4 pt-2 transition-opacity
                   duration-200 ${locked ? "opacity-55 saturate-0" : ""}`}>
       <legend className="px-1.5 text-[13px] text-foreground">{legend}</legend>
       {aside && <div className="-mt-1 mb-2 text-right text-[11.5px] text-dim">{aside}</div>}
@@ -460,7 +463,7 @@ export default function List() {
                    object-cover opacity-60 [mask-image:linear-gradient(to_bottom,black,transparent)]
                    dark:block" />
       <Shell className="relative pb-28 pt-4 sm:pt-8 lg:pb-14">
-        <div className="grid overflow-hidden rounded-[24px] border border-line bg-panel
+        <div className="grid overflow-hidden rounded-[12px] border border-line bg-panel
                         lg:grid-cols-[minmax(0,1fr)_440px]">
           {/* ------------------------------------------------------ form */}
           <div className="min-w-0 px-5 py-7 sm:px-9 sm:py-9">
@@ -469,13 +472,13 @@ export default function List() {
                              tracking-[-.02em]">
                 {tab === "list" ? "List a market" : "Back a market"}
               </h1>
-              <Tabs value={tab} onValueChange={(v) => setTab(v as "list" | "back")} variant="pill">
-                <TabsList className={PILL_LIST}>
-                  <TabsTrigger value="list" className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
+              <Tabs value={tab} onValueChange={(v) => setTab(v as "list" | "back")} variant="underline">
+                <TabsList className="gap-0 border-0">
+                  <TabsTrigger value="list" className={TAB} indicatorClassName="bg-foreground">
                     List
                   </TabsTrigger>
-                  <TabsTrigger value="back" className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
-                    Back{listed.length > 0 && <span className="n ml-1.5 opacity-60">{listed.length}</span>}
+                  <TabsTrigger value="back" className={TAB} indicatorClassName="bg-foreground">
+                    Back{listed.length > 0 && <span className="n ml-1.5 text-[11.5px] text-dim">{listed.length}</span>}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -501,7 +504,7 @@ export default function List() {
                       role="combobox" aria-expanded={showList} aria-controls="token-results"
                       spellCheck={false} autoComplete="off"
                       placeholder="Search a ticker, name or mint"
-                      className={`${FIELD} h-[48px] pl-10 pr-10 text-[14.5px]`} />
+                      className={`${FIELD} h-11 pl-10 pr-10 text-[14px]`} />
                     {(searching || (reading && !preview)) ? (
                       <Loader2 size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2
                                                     animate-spin text-dim" />
@@ -517,7 +520,7 @@ export default function List() {
                     {showList && hits.length > 0 && (
                       <ul id="token-results" role="listbox"
                         className="absolute inset-x-0 top-[calc(100%+6px)] z-30 max-h-[360px]
-                                   overflow-y-auto overscroll-contain rounded-[14px] border
+                                   overflow-y-auto overscroll-contain rounded-[10px] border
                                    border-line bg-panel p-1 shadow-2xl">
                         {hits.map((t, i) => (
                           <li key={t.mint} role="option" aria-selected={i === cursor}>
@@ -525,7 +528,7 @@ export default function List() {
                               onMouseDown={(e) => e.preventDefault()}
                               onMouseEnter={() => { setCursor(i); prefetchPools(t.mint); }}
                               onClick={() => pick(t)}
-                              className={`flex w-full items-center gap-3 rounded-[10px] px-2.5 py-2
+                              className={`flex w-full items-center gap-3 rounded-[7px] px-2.5 py-2
                                           text-left ${i === cursor ? "bg-panel2" : ""}`}>
                               <TokenIcon src={t.icon} label={t.symbol} />
                               <span className="min-w-0 flex-1">
@@ -588,7 +591,7 @@ export default function List() {
                   {!token ? (
                     <div className="grid grid-cols-2 gap-2">
                       {["Raydium CLMM", "Meteora DLMM"].map((d) => (
-                        <div key={d} className="grid h-[56px] place-items-center rounded-[12px]
+                        <div key={d} className="grid h-[52px] place-items-center rounded-[8px]
                                                 border border-line text-[13.5px] text-muted-foreground">
                           {d}
                         </div>
@@ -599,7 +602,7 @@ export default function List() {
                   ) : !pools ? (
                     <div className="grid grid-cols-2 gap-2">
                       {[0, 1].map((i) => (
-                        <div key={i} className="h-[56px] animate-pulse rounded-[12px] bg-panel2" />
+                        <div key={i} className="h-[52px] animate-pulse rounded-[8px] bg-panel2" />
                       ))}
                     </div>
                   ) : (
@@ -609,15 +612,15 @@ export default function List() {
                         return (
                           <button key={p.address} type="button" role="radio" aria-checked={on}
                             onClick={() => { touched.current = true; setChosen(p.address); }}
-                            className={`press flex min-h-[56px] items-center justify-between gap-3
-                                        rounded-[12px] border px-4 py-2.5 text-left transition-colors ${on
+                            className={`press flex min-h-[52px] items-center justify-between gap-3
+                                        rounded-[8px] border px-4 py-2.5 text-left transition-colors ${on
                               ? "border-foreground bg-foreground text-background"
                               : "border-line hover:border-foreground/30"}`}>
                             <span className="min-w-0">
                               <span className="flex items-center gap-2 text-[13.5px] font-medium">
                                 {DEX_NAME[p.dex]}
                                 {i === 0 && pools.length > 1 && (
-                                  <span className={`rounded-full px-1.5 py-px text-[10px] font-medium ${on
+                                  <span className={`rounded-[4px] px-1.5 py-px text-[10px] font-medium ${on
                                     ? "bg-background/15" : "bg-up/15 text-up"}`}>Deepest</span>
                                 )}
                               </span>
@@ -648,7 +651,7 @@ export default function List() {
                     {(Object.keys(PAY_TOKENS) as PayWith[]).map((k) => (
                       <button key={k} type="button" role="radio" aria-checked={payWith === k}
                         onClick={() => { setPayWith(k); setSeed(k === "SOL" ? "" : String(defaultBacking)); }}
-                        className={`press flex h-10 min-w-0 items-center justify-center rounded-full
+                        className={`press flex h-10 min-w-0 items-center justify-center rounded-[8px]
                                     border px-2 text-[13.5px] transition-colors sm:justify-start
                                     sm:pl-1.5 sm:pr-4 ${payWith === k
                           ? "border-foreground text-foreground"
@@ -661,7 +664,7 @@ export default function List() {
                     <input value={seed} inputMode="decimal"
                       onChange={(e) => setSeed(e.target.value.replace(/[^\d.]/g, ""))}
                       placeholder="0.00" aria-label={`Backing in ${payWith}`}
-                      className={`n ${FIELD} h-[48px] pr-16 text-[14.5px]`} />
+                      className={`n ${FIELD} h-11 pr-16 text-[14px]`} />
                     <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2">
                       <img src={PAY_TOKENS[payWith].logo} alt="" className="size-5 rounded-full" />
                     </span>
@@ -669,7 +672,7 @@ export default function List() {
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     {LIST_QUICK[payWith].map((q) => (
                       <button key={q} type="button" onClick={() => setSeed(String(q))}
-                        className={`press h-7 rounded-full border px-3 text-[12px] transition-colors ${
+                        className={`press h-7 rounded-[6px] border px-3 text-[12px] transition-colors ${
                           seedAmount === q
                             ? "border-foreground/60 text-foreground"
                             : "border-line text-muted-foreground hover:text-foreground"}`}>
@@ -724,8 +727,8 @@ export default function List() {
                     </label>
                   </div>
                   <button type="button" onClick={cta.onClick} disabled={cta.disabled}
-                    className="press flex h-[48px] w-full items-center justify-center gap-2
-                               rounded-full bg-foreground text-[14px] font-medium text-background
+                    className="press flex h-11 w-full items-center justify-center gap-2
+                               rounded-[8px] bg-foreground text-[14px] font-medium text-background
                                transition-opacity hover:opacity-90 disabled:pointer-events-none
                                disabled:opacity-35">
                     {busy && <Loader2 size={15} className="animate-spin" />}
@@ -752,7 +755,7 @@ export default function List() {
                   {(Object.keys(PAY_TOKENS) as PayWith[]).map((k) => (
                     <button key={k} type="button" role="radio" aria-checked={payWith === k}
                       onClick={() => setPayWith(k)}
-                      className={`press flex h-9 items-center rounded-full border pl-1.5 pr-3.5
+                      className={`press flex h-9 items-center rounded-[8px] border pl-1.5 pr-3.5
                                   text-[13px] transition-colors ${payWith === k
                         ? "border-foreground text-foreground"
                         : "border-line text-muted-foreground hover:text-foreground"}`}>
@@ -761,7 +764,7 @@ export default function List() {
                   ))}
                 </div>
                 {listed.length === 0 ? (
-                  <div className="rounded-[16px] border border-dashed border-line px-4 py-10 text-center
+                  <div className="rounded-[10px] border border-dashed border-line px-4 py-10 text-center
                                   text-[13px] text-muted-foreground">
                     No markets yet.{" "}
                     <button type="button" onClick={() => setTab("list")}
@@ -771,7 +774,7 @@ export default function List() {
                   const s = statusOf(m);
                   return (
                     <div key={m.symbol} id={m.symbol}
-                      className="scroll-mt-24 rounded-[16px] border border-line px-4 py-3.5 target:border-foreground/40">
+                      className="scroll-mt-24 rounded-[10px] border border-line px-4 py-3.5 target:border-foreground/40">
                       <div className="flex items-center gap-3">
                         {m.observed!.tradeable || m.observed!.budgetUsd > 0 ? (
                           <a href={`/trade?symbol=${m.symbol}`}
@@ -796,7 +799,7 @@ export default function List() {
                           className={`n ${FIELD} h-10 flex-1`} />
                         <button onClick={() => back(m)}
                           disabled={busy || !wallet.publicKey || !(Number(backing[m.symbol]) > 0)}
-                          className="press h-10 flex-none rounded-full bg-foreground px-5 text-[13px]
+                          className="press h-10 flex-none rounded-[8px] bg-foreground px-5 text-[13px]
                                      font-medium text-background transition-opacity hover:opacity-90
                                      disabled:pointer-events-none disabled:opacity-35">
                           Back it
@@ -807,7 +810,7 @@ export default function List() {
                 })}
                 {!wallet.publicKey && listed.length > 0 && (
                   <button type="button" onClick={() => setVisible(true)}
-                    className="press mt-1 h-[48px] w-full rounded-full bg-foreground text-[14px]
+                    className="press mt-1 h-11 w-full rounded-[8px] bg-foreground text-[14px]
                                font-medium text-background hover:opacity-90">
                     Connect wallet
                   </button>
@@ -822,8 +825,8 @@ export default function List() {
           <aside className="flex min-w-0 flex-col gap-5 border-t border-line bg-panel2 px-5 py-7
                             sm:px-9 sm:py-9 lg:border-l lg:border-t-0">
             <div className="lg:sticky lg:top-24 lg:flex lg:flex-col lg:gap-5">
-              <div className="flex items-start gap-3 rounded-[16px] border border-line bg-panel
-                              px-4 py-3.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,.5)]">
+              <div className="flex items-start gap-3 rounded-[10px] border border-line bg-panel
+                              px-4 py-3.5">
                 {token
                   ? <TokenIcon src={preview?.icon ?? token.icon} label={token.symbol} size={36} />
                   : <span className="grid size-9 flex-none place-items-center rounded-full bg-panel3">
@@ -835,9 +838,9 @@ export default function List() {
                 </span>
               </div>
 
-              <div className="mt-5 rounded-[20px] border border-line bg-panel p-4 lg:mt-0">
+              <div className="mt-5 rounded-[10px] border border-line bg-panel p-4 lg:mt-0">
                 <div className="relative grid aspect-[4/3] place-items-center overflow-hidden
-                                rounded-[14px] border border-line bg-panel2">
+                                rounded-[8px] border border-line bg-panel2">
                   {token || preview ? (
                     <div className="flex flex-col items-center gap-3">
                       <TokenIcon src={preview?.icon ?? token?.icon} label={name || token?.symbol || "?"} size={72} />
@@ -925,7 +928,7 @@ export default function List() {
               </span>
             </span>
             <button type="button" onClick={cta.onClick} disabled={cta.disabled}
-              className="press h-[44px] flex-none rounded-full bg-foreground px-5 text-[13.5px]
+              className="press h-[44px] flex-none rounded-[8px] bg-foreground px-5 text-[13.5px]
                          font-medium text-background disabled:opacity-35">
               {offChain ? "Not on this chain" : signable === false ? "Devnet soon" : cta.label}
             </button>

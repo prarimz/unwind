@@ -47,7 +47,7 @@ export function Joined({ me }: { me: Me }) {
     <div className="mx-auto w-full max-w-[480px] text-left">
       {/* Opaque, not tinted glass: the device is drawn behind this and a
           translucent card let it through the type. */}
-      <div className="rounded-[24px] border border-line bg-panel2 p-5 sm:p-6
+      <div className="rounded-[12px] border border-line bg-panel2 p-5 sm:p-6
                       shadow-[0_24px_60px_-28px_rgba(0,0,0,.55)]">
         <h2 className="text-[17px] font-medium tracking-[-.01em]">@{me.handle} is on the list.</h2>
 
@@ -61,7 +61,7 @@ export function Joined({ me }: { me: Me }) {
 
         <div className="mt-4 grid grid-cols-2 gap-2.5">
           <button type="button" onClick={copy}
-            className="press flex h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-full
+            className="press flex h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-[8px]
                        bg-foreground px-3 text-[14px] font-medium text-background transition-opacity
                        hover:opacity-90">
             {copied ? <Check size={15} /> : <Copy size={15} />}

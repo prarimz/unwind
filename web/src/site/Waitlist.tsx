@@ -60,7 +60,7 @@ function Join() {
        */}
       <div className="flex flex-wrap items-center justify-center gap-3 max-sm:gap-2">
         <a href={ref ? `/api/x/start?ref=${encodeURIComponent(ref)}` : "/api/x/start"}
-          className="press flex h-[48px] items-center gap-2.5 rounded-full bg-foreground px-6
+          className="press flex h-[48px] items-center gap-2.5 rounded-[8px] bg-foreground px-6
                      text-[14px] font-medium text-background transition-opacity
                      hover:opacity-90 max-sm:px-5">
           <XMark size={15} />
@@ -70,13 +70,13 @@ function Join() {
           aria-expanded={help} aria-controls="what-panel"
           className={`${OUTLINE} flex h-[48px] items-center !py-0 !text-[14px] max-sm:px-5
                       ${help ? "border-foreground/40" : ""}`}>
-          1) What
+          About
         </button>
       </div>
       {/* What the button does, in the order it happens: connecting an
           account is not obviously the same as joining anything. */}
       <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
-        Connect X. Join the waitlist. Get early access.
+        Sign in with X to join the waitlist.
       </p>
       {error && (
         <p className="mt-4 text-[13px] leading-relaxed text-down">{error}</p>
@@ -97,7 +97,7 @@ function Join() {
         <div className="overflow-hidden">
           {/* Sized to the column, not the viewport: the wrapper above clips
               for the open animation, so anything wider loses its right edge. */}
-          <div className={`mx-auto mt-5 w-full max-w-[440px] rounded-[24px] border border-line
+          <div className={`mx-auto mt-5 w-full max-w-[440px] rounded-[12px] border border-line
                            bg-panel2 px-5 pb-2 pt-4 text-left transition-opacity duration-200
                            ${help ? "opacity-100" : "opacity-0"}`}>
             <p className="pb-3 text-[15px] font-medium">What unwind is</p>
@@ -260,13 +260,13 @@ export default function Waitlist() {
           {me && (
             <details className="relative">
               <summary className="flex h-[36px] cursor-pointer list-none items-center gap-1.5
-                                  rounded-full border border-line bg-panel2 pl-3.5 pr-2.5
+                                  rounded-[8px] border border-line bg-panel2 pl-3.5 pr-2.5
                                   text-[13px] font-medium transition-colors
                                   hover:border-foreground/40">
                 @{me.handle}
                 <ChevronDown size={14} className="text-muted-foreground" />
               </summary>
-              <div className="absolute right-0 top-[calc(100%+8px)] min-w-[160px] rounded-[16px]
+              <div className="absolute right-0 top-[calc(100%+8px)] min-w-[160px] rounded-[10px]
                               border border-line bg-panel2 p-1.5 text-[13px] shadow-lg">
                 <a href={`https://x.com/${me.handle}`} target="_blank" rel="noreferrer"
                   className="block rounded-[10px] px-3 py-2 hover:bg-panel3">Open X profile</a>
