@@ -287,7 +287,7 @@ export default function Markets() {
             <input value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Search markets" aria-label="Search markets"
               className="relative z-10 h-[52px] w-full rounded-[10px] border border-line
-                         bg-[#121028] pl-[46px] pr-5 text-[15px] transition-colors
+                         bg-panel pl-[46px] pr-5 text-[15px] transition-colors
                          placeholder:text-muted-foreground focus:border-foreground/40
                          focus:outline-none sm:h-[62px] sm:pl-[52px] sm:pr-6" />
           </div>
