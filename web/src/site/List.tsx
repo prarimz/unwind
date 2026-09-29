@@ -53,7 +53,7 @@ const NONE: Market[] = [];
 
 const FIELD =
   "w-full rounded-[8px] border border-line bg-panel2 px-3.5 text-[13.5px] outline-none " +
-  "transition-colors placeholder:text-dim focus:border-brand";
+  "transition-colors placeholder:text-dim focus:border-foreground/40";
 
 /// Round numbers for a listing's backing. Smaller than a backer's, because
 /// the lister is opening the door, not underwriting the whole room.
@@ -456,20 +456,13 @@ export default function List() {
     <div className="site relative min-h-full">
       <SiteHeader here="/list" actions={<WalletActions />} />
 
-      {/* The front page's violet light across the top of the page, fading out
-          before the card's fields, so the page opens the way the front page does. */}
-      <img src="/waitlist/field.webp" alt="" aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[76px] hidden h-[420px] w-full
-                   object-cover opacity-60 [mask-image:linear-gradient(to_bottom,black,transparent)]
-                   dark:block" />
       <Shell className="relative pb-28 pt-4 sm:pt-8 lg:pb-14">
         <div className="grid overflow-hidden rounded-[12px] border border-line bg-panel
                         lg:grid-cols-[minmax(0,1fr)_440px]">
           {/* ------------------------------------------------------ form */}
           <div className="min-w-0 px-5 py-7 sm:px-9 sm:py-9">
             <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
-              <h1 className="font-serif-display text-[clamp(2rem,3.4vw,2.6rem)] leading-none
-                             tracking-[-.02em]">
+              <h1 className="text-[24px] font-semibold leading-none tracking-[-.02em]">
                 {tab === "list" ? "List a market" : "Back a market"}
               </h1>
               <Tabs value={tab} onValueChange={(v) => setTab(v as "list" | "back")} variant="underline">

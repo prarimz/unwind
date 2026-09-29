@@ -323,7 +323,7 @@ export default function App() {
   );
   // Panels in the site header's treatment: flush, a 2px seam of page between
   // them, small corners, one bottom rule.
-  const PANE = "min-h-0 overflow-hidden rounded-[10px] border-b border-line bg-panel";
+  const PANE = "min-h-0 overflow-hidden rounded-[6px] border-b border-line bg-panel";
 
   if (isWide) {
     return (
@@ -348,7 +348,7 @@ export default function App() {
             onPalette={() => setPaletteOpen(true)} />
 
           <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-            <div className="flex-none overflow-hidden rounded-[10px] bg-panel">
+            <div className="flex-none overflow-hidden rounded-[6px] bg-panel">
               <MarketHeader m={market} onOpen={() => setPaletteOpen(true)} batch={batch} />
             </div>
             <div className="flex min-h-0 flex-1 gap-[2px]">
@@ -375,7 +375,7 @@ export default function App() {
             {accountBox}
             {/* The rest of the rail is an empty panel rather than bare page,
                 so the column ends level with the positions beside it. */}
-            <div aria-hidden className="min-h-0 !flex-1 rounded-[10px] border-b border-line bg-panel" />
+            <div aria-hidden className="min-h-0 !flex-1 rounded-[6px] border-b border-line bg-panel" />
           </aside>
         </main>
 
@@ -397,7 +397,7 @@ export default function App() {
         {readOnly && <ReadOnlyNotice />}
       </div>
       <main className="flex flex-1 flex-col gap-[2px] p-[2px]">
-        <div className="overflow-hidden rounded-[10px] bg-panel">
+        <div className="overflow-hidden rounded-[6px] bg-panel">
           <MarketHeader m={market} onOpen={() => setPaletteOpen(true)} batch={batch} />
         </div>
         <div className="flex gap-[2px]">
@@ -422,7 +422,7 @@ export default function App() {
 /// Grey panes in the terminal's layout, shown for the second before the
 /// first market list arrives.
 function TradeSkeleton({ wide }: { wide: boolean }) {
-  const pane = "rounded-[10px] border-b border-line bg-panel";
+  const pane = "rounded-[6px] border-b border-line bg-panel";
   const bar = (w: string) => <div className={`h-3 animate-pulse rounded-full bg-panel2 ${w}`} />;
   if (!wide) {
     return (

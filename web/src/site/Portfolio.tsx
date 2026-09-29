@@ -20,7 +20,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import {
-  BTN, Count, DASH, Empty, Field, Foot, GHOST, Head, KV, LINK, Lookup, PAD, PageTop, Panel,
+  BTN, Count, DASH, Empty, Foot, GHOST, Head, KV, LINK, Lookup, PAD, PageTop, Panel,
   PanelTabs, ROW, SMALL, Skeleton, Tiles, isAddress, short, useHashTab,
 } from "@/site/Account";
 import { WalletActions } from "@/components/WalletActions";
@@ -119,7 +119,6 @@ export default function PortfolioPage() {
   return (
     <div className="site relative min-h-full">
       <SiteHeader here="/portfolio" actions={<WalletActions />} />
-      <Field />
 
       <Shell className="relative pb-14 pt-6 sm:pt-9">
         <PageTop title="Portfolio"

@@ -26,7 +26,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import {
-  BTN, Chart, Count, DASH, Empty, Field, Foot, GHOST, Head, KV, LABEL, PAD, PageTop, Panel,
+  BTN, Chart, Count, DASH, Empty, Foot, GHOST, Head, KV, LABEL, PAD, PageTop, Panel,
   PanelTabs, ROW, Seg, Tiles,
 } from "@/site/Account";
 import { Mark } from "@/components/Brand";
@@ -409,7 +409,6 @@ export default function Earn() {
   return (
     <div className="site relative min-h-full">
       <SiteHeader here="/earn" actions={<WalletActions />} />
-      <Field />
 
       <Shell className="relative pb-14 pt-6 sm:pt-9">
         <PageTop title="Earn"

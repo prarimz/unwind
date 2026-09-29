@@ -17,7 +17,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { DOCS, Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import {
-  BTN, Count, DASH, Empty, Field, Foot, GHOST, Head, KV, LABEL, LINK, Lookup, PAD, PageTop, Panel,
+  BTN, Count, DASH, Empty, Foot, GHOST, Head, KV, LABEL, LINK, Lookup, PAD, PageTop, Panel,
   PanelTabs, ROW, Seg, Tiles, isAddress, short, useHashTab,
 } from "@/site/Account";
 import { WalletActions } from "@/components/WalletActions";
@@ -134,7 +134,6 @@ export default function RewardsPage() {
   return (
     <div className="site relative min-h-full">
       <SiteHeader here="/rewards" actions={<WalletActions />} />
-      <Field />
 
       <Shell className="relative pb-14 pt-6 sm:pt-9">
         <PageTop title="Rewards"

@@ -63,7 +63,7 @@ export function MobileBars({
               aria-current={on ? "page" : undefined}
               className={`press flex h-10 items-center justify-center gap-1.5 rounded-[8px]
                           text-[13px] transition-colors duration-150
-                          ${on ? "bg-foreground font-medium text-background"
+                          ${on ? "bg-panel3 font-medium text-foreground"
                                : "text-muted-foreground hover:text-foreground"}`}>
               {l}
               {v === "positions" && positions > 0 && (

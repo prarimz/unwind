@@ -290,10 +290,10 @@ export function BookPanel({
     <section className="flex min-h-0 flex-1 flex-col">
       <Tabs defaultValue="batch" className="flex min-h-0 flex-1 flex-col">
         <div className={`flex-none border-b border-line ${narrow ? "px-3 py-2" : "px-5 py-3 sm:px-6"}`}>
-          <TabsList soft>
-            <TabsTrigger soft value="batch">Batch</TabsTrigger>
-            <TabsTrigger soft value="trades">Trades</TabsTrigger>
-            <TabsTrigger soft value="liquidity">Liquidity</TabsTrigger>
+          <TabsList>
+            <TabsTrigger value="batch">Batch</TabsTrigger>
+            <TabsTrigger value="trades">Trades</TabsTrigger>
+            <TabsTrigger value="liquidity">Liquidity</TabsTrigger>
           </TabsList>
         </div>
 

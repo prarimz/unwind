@@ -31,15 +31,6 @@ export const LABEL = "text-[11px] font-medium uppercase tracking-[.08em] text-di
 export const short = (a: string) => `${a.slice(0, 4)}…${a.slice(-4)}`;
 export const isAddress = (s: string) => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
 
-/// The page's violet light across the top, fading out before the content, as
-/// every page below the front page opens (dark mode only).
-export const Field = () => (
-  <img src="/waitlist/field.webp" alt="" aria-hidden
-    className="pointer-events-none absolute inset-x-0 top-[76px] hidden h-[380px] w-full
-               object-cover opacity-50 [mask-image:linear-gradient(to_bottom,black,transparent)]
-               dark:block" />
-);
-
 /// The page's name, one line under it, and its actions at the far end.
 export function PageTop({ title, lede, actions }: {
   title: string; lede?: ReactNode; actions?: ReactNode;
@@ -47,7 +38,7 @@ export function PageTop({ title, lede, actions }: {
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
       <div className="min-w-0">
-        <h1 className="font-serif-display text-[clamp(2.25rem,4vw,3rem)] leading-none tracking-[-.02em]">
+        <h1 className="text-[24px] font-semibold leading-none tracking-[-.02em]">
           {title}
         </h1>
         {lede && <p className="mt-2.5 max-w-[60ch] text-[13.5px] leading-[1.55] text-muted-foreground">{lede}</p>}

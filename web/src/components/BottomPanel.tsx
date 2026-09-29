@@ -292,15 +292,15 @@ export function BottomPanel({
         className={mobile ? "flex-none border-b border-line px-3 py-2.5"
           : docked ? "strip-scroll flex-none border-b border-line px-3 py-2"
           : "flex-none border-b border-line px-5 py-3 sm:px-6"}>
-        <TabsList soft={!mobile}>
-          <TabsTrigger soft={!mobile} value="positions">
+        <TabsList>
+          <TabsTrigger value="positions">
             Positions{!mobile && count(positions.length)}
           </TabsTrigger>
-          {!mobile && <TabsTrigger soft value="orders">Open Orders{count(orders.length)}</TabsTrigger>}
-          {!mobile && <TabsTrigger soft value="funding">Funding</TabsTrigger>}
-          <TabsTrigger soft={!mobile} value="history">Trade History</TabsTrigger>
-          {!mobile && <TabsTrigger soft value="fills">Order History</TabsTrigger>}
-          <TabsTrigger soft={!mobile} value="liqs">Liquidations</TabsTrigger>
+          {!mobile && <TabsTrigger value="orders">Open Orders{count(orders.length)}</TabsTrigger>}
+          {!mobile && <TabsTrigger value="funding">Funding</TabsTrigger>}
+          <TabsTrigger value="history">Trade History</TabsTrigger>
+          {!mobile && <TabsTrigger value="fills">Order History</TabsTrigger>}
+          <TabsTrigger value="liqs">Liquidations</TabsTrigger>
         </TabsList>
       </Tabs>
 

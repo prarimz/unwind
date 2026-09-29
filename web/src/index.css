@@ -32,9 +32,9 @@
      Every surface, line and grey below carries the same violet bias. */
   --background: #0c0a1c;
   /* A violet glow falling from the top of the page; nothing in light mode. */
-  --glow: rgba(106, 77, 244, .16);
+  --glow: rgba(106, 77, 244, .09);
   /* How strong the film grain over every page is (see body::after). */
-  --grain: .13;
+  --grain: .05;
   --foreground: #ece9fb;
   --card: #121028;
   --card-foreground: #ece9fb;

@@ -130,7 +130,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
           <button key={g.key} type="button" onClick={() => { setGroup(g.key); setQuery(""); }}
             aria-pressed={g.key === group && !query}
             className={cn("h-7 flex-none rounded-[6px] px-2.5 text-[12px] font-medium transition-colors",
-              g.key === group && !query ? "bg-foreground text-background"
+              g.key === group && !query ? "bg-panel3 text-foreground"
                 : "text-muted-foreground hover:bg-panel2 hover:text-foreground")}>
             {g.label}
           </button>
@@ -168,8 +168,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5">
                     <span className="truncate text-[12.5px] font-medium">{m.symbol}</span>
-                    <span className="n flex-none rounded-[4px] border border-line px-1.5 text-[10px]
-                                     leading-[15px] text-muted-foreground">{m.maxLeverage}x</span>
+                    <span className="n flex-none text-[10.5px] text-dim">{m.maxLeverage}x</span>
                   </span>
                   <span className="block truncate text-[11px] text-dim">{m.name}</span>
                 </span>

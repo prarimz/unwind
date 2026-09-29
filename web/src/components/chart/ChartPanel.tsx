@@ -22,14 +22,14 @@ function readPrefs(): Prefs {
   catch { return DEFAULTS; }
 }
 
-/// A toggle in the chart's toolbar, in the house pill: inverted when on.
+/// A toggle in the chart's toolbar: a word, tinted when on.
 function Pill({ on, onClick, children, title }: {
   on: boolean; onClick: () => void; children: ReactNode; title?: string;
 }) {
   return (
     <button type="button" aria-pressed={on} title={title} onClick={onClick}
-      className={cn("h-7 flex-none rounded-full px-3 text-[12px] font-medium transition-colors",
-        on ? "bg-foreground text-background"
+      className={cn("h-7 flex-none rounded-[6px] px-2 text-[12.5px] font-medium transition-colors",
+        on ? "bg-panel3 text-foreground"
            : "text-muted-foreground hover:bg-panel2 hover:text-foreground")}>
       {children}
     </button>
@@ -41,8 +41,8 @@ function IconButton({ on = false, onClick, label, children }: {
 }) {
   return (
     <button type="button" aria-label={label} title={label} aria-pressed={on} onClick={onClick}
-      className={cn("grid size-7 flex-none place-items-center rounded-full transition-colors",
-        on ? "bg-foreground text-background"
+      className={cn("grid size-7 flex-none place-items-center rounded-[6px] transition-colors",
+        on ? "bg-panel3 text-foreground"
            : "text-muted-foreground hover:bg-panel2 hover:text-foreground")}>
       {children}
     </button>
