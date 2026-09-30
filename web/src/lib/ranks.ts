@@ -14,23 +14,26 @@
  */
 import type { Rewards } from "@/lib/api";
 
+/// How the glass mark is tinted for a rank: the metal the rank is named for.
+export type Tint = "bronze" | "silver" | "gold" | "platinum" | "diamond";
+
 /// Trading ranks, by points. The discount is off every open and close fee.
 export const RANKS = [
-  { name: "Trader",  at: 0,          discount: 0 },
-  { name: "Regular", at: 10_000,     discount: 2.5 },
-  { name: "Desk",    at: 100_000,    discount: 5 },
-  { name: "Whale",   at: 1_000_000,  discount: 7.5 },
-  { name: "Titan",   at: 10_000_000, discount: 10 },
-] as const;
+  { name: "Bronze",   at: 0,         discount: 0,   tint: "bronze" },
+  { name: "Silver",   at: 1_000,     discount: 2.5, tint: "silver" },
+  { name: "Gold",     at: 10_000,    discount: 5,   tint: "gold" },
+  { name: "Platinum", at: 100_000,   discount: 7.5, tint: "platinum" },
+  { name: "Diamond",  at: 1_000_000, discount: 10,  tint: "diamond" },
+] as const satisfies readonly { name: string; at: number; discount: number; tint: Tint }[];
 
 /// Referral ranks, by active referees: wallets that took your code and
 /// have filled at least one order. The share is of every fee they pay.
 export const REF_RANKS = [
-  { name: "Referrer I",   at: 0,   share: 10 },
-  { name: "Referrer II",  at: 5,   share: 15 },
-  { name: "Referrer III", at: 20,  share: 20 },
-  { name: "Referrer IV",  at: 50,  share: 25 },
-] as const;
+  { name: "Bronze",   at: 0,  share: 10, tint: "bronze" },
+  { name: "Silver",   at: 5,  share: 15, tint: "silver" },
+  { name: "Gold",     at: 20, share: 20, tint: "gold" },
+  { name: "Platinum", at: 50, share: 25, tint: "platinum" },
+] as const satisfies readonly { name: string; at: number; share: number; tint: Tint }[];
 
 export const SEASONS = [
   { name: "Devnet",   note: "Now",     state: "active" },
@@ -41,7 +44,7 @@ export const SEASONS = [
 
 export type Ladder = {
   /// Index into the ladder, and the rung itself.
-  level: number; name: string;
+  level: number; name: string; tint: Tint;
   /// The figure the ladder is climbed by, and the next rung's threshold
   /// (null at the top).
   value: number; next: number | null;
@@ -49,13 +52,13 @@ export type Ladder = {
   frac: number;
 };
 
-function climb(value: number, rungs: readonly { name: string; at: number }[]): Ladder {
+function climb(value: number, rungs: readonly { name: string; at: number; tint: Tint }[]): Ladder {
   let level = 0;
   for (let i = 0; i < rungs.length; i++) if (value >= rungs[i].at) level = i;
   const here = rungs[level].at;
   const next = rungs[level + 1]?.at ?? null;
   const frac = next == null ? 1 : Math.min(1, Math.max(0, (value - here) / (next - here)));
-  return { level, name: rungs[level].name, value, next, frac };
+  return { level, name: rungs[level].name, tint: rungs[level].tint, value, next, frac };
 }
 
 export const activeReferees = (r: Rewards) => r.referees.filter((x) => x.volume > 0).length;
