@@ -379,26 +379,19 @@ export default function RewardsPage() {
 
 /* ------------------------------------------------------------- pieces */
 
-/// The glass mark, tinted for a rank. Locked ranks are drained.
-const TINT: Record<Tint, string> = {
-  bronze: "sepia(1) saturate(2.2) hue-rotate(-28deg) brightness(.82)",
-  silver: "grayscale(1) brightness(1.15)",
-  gold: "sepia(1) saturate(3) hue-rotate(2deg) brightness(1.12)",
-  platinum: "grayscale(.7) brightness(1.3) contrast(1.05)",
-  diamond: "saturate(1.15) brightness(1.1)",
-};
+/// A rank's emblem: its own render (brand/x/3d/ranks.py), the logo face
+/// on a body that grows with the rank. Locked ranks are drained.
 function Emblem({ tint, size, locked = false, glow = false }: {
   tint: Tint; size: number; locked?: boolean; glow?: boolean;
 }) {
   return (
     <span className="relative grid flex-none place-items-center" style={{ width: size, height: size }}>
       {glow && !locked && (
-        <span aria-hidden className="absolute inset-[-30%] rounded-full bg-brand/30 blur-2xl" />
+        <span aria-hidden className="absolute inset-[-25%] rounded-full bg-brand/30 blur-2xl" />
       )}
-      <img src="/waitlist/logo-glass.webp" alt="" draggable={false} width={size} height={size}
+      <img src={`/ranks/${tint}.webp`} alt="" draggable={false} width={size} height={size}
         className="relative select-none"
-        style={{ filter: locked ? "grayscale(1) brightness(.6)" : TINT[tint],
-                 opacity: locked ? .35 : 1 }} />
+        style={{ filter: locked ? "grayscale(1) brightness(.55)" : undefined, opacity: locked ? .4 : 1 }} />
     </span>
   );
 }
