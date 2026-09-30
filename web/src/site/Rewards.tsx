@@ -391,7 +391,7 @@ function Emblem({ tint, size, locked = false, glow = false }: {
       )}
       <img src={`/ranks/${tint}.webp`} alt="" draggable={false} width={size} height={size}
         className="relative select-none"
-        style={{ filter: locked ? "grayscale(1) brightness(.55)" : undefined, opacity: locked ? .4 : 1 }} />
+        style={{ filter: locked ? "saturate(.55) brightness(.7)" : undefined, opacity: locked ? .7 : 1 }} />
     </span>
   );
 }
