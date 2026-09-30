@@ -5,8 +5,7 @@
 The portfolio page, at `/portfolio`, shows everything one wallet holds on
 unwind in one place: open positions, standing orders, xLP in the pool,
 backing behind markets, and recent fills. Add `?wallet=<address>` to view any
-wallet read only; every figure on it is public on chain. With no wallet
-connected, the page takes an address to look up instead.
+wallet read only; every figure on it is public on chain.
 
 ## What it shows
 

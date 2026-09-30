@@ -44,14 +44,6 @@ withdraws. It does not raise the market's loss budget: fee income belongs to
 the backers, and letting it widen the allowance would let a busy market
 underwrite itself with money nobody chose to put at risk.
 
-The return a backer sees on the Earn page is measured, not projected. The
-server samples what one backing share is worth every two minutes, keeps a
-week of samples, and annualizes the change over whatever of that week it has
-seen; a market watched for under an hour shows no rate rather than a few
-minutes scaled up to a year. The same samples are drawn as the return per
-share on the page, for the pool and for each backed market, so the rate is
-never shown without the line it came from.
-
 ## What backing can be posted in
 
 Backing can be posted in USDC, USDT or SOL, and it is held in whatever it was

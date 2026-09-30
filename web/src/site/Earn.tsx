@@ -1,50 +1,69 @@
 /*
  * Earn.
  *
- * The page a depositor opens. What the vaults hold and return at the top,
- * the pool's share price drawn over the week, then two tables: the pool on
- * its own, and every market as a vault of first-loss backing.
+ * The page a depositor opens: what they hold at the top, beside the way in,
+ * and every vault in a table underneath -- one row each, read across by what
+ * it holds, what it has returned and what it is for, and opened by clicking
+ * the row.
  *
  * Backing leads. The way most people should take part is to pick a market
  * they believe in and stand behind it: first loss on that one market, half
  * the LP share of its fees. The pool is the default under all of it, for
  * whoever would rather hold every market at once than choose.
  *
+ * There are two kinds of vault and the Strategy column says which. The pool
+ * is the shared one: the counterparty of last resort in every market at once,
+ * where a deposit mints xLP and the share price moves with what the pool
+ * earns and pays. Every other row is one market's backing: first-loss capital
+ * behind one listing, spent before the pool is touched, and the only thing
+ * that lets a market somebody opened take positions at all.
+ *
  * The APY is measured, not projected. The server watches what each vault's
  * share is worth -- the pool's share price, a market's backing per share,
  * both of which rise with the fees they keep and fall with what traders win
  * -- and annualizes the change over the window it has seen. Each figure says
  * how long that window is, and a vault watched for under an hour says
- * "Measuring" rather than scaling a few minutes up to a year. The chart is
- * that same tape, so the rate is never a number without a line behind it.
+ * "Measuring" rather than scaling a few minutes up to a year.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import "@/site/serif.css";
 import { AnimatePresence, motion } from "motion/react";
-import { Search, X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
-import {
-  BTN, Chart, Count, DASH, Empty, Foot, GHOST, Head, KV, LABEL, PAD, PageTop, Panel,
-  PanelTabs, ROW, Seg, Tiles,
-} from "@/site/Account";
+import { PILL_INDICATOR, PILL_LIST, PILL_TRIGGER, Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import { Mark } from "@/components/Brand";
 import { TickerLogo } from "@/components/TickerLogo";
 import { WalletActions } from "@/components/WalletActions";
+import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
+import { AnimatedNumber } from "@/components/motion/animated-number";
 import * as api from "@/lib/api";
 import {
   getAccount, getApy, getBackings, getMarkets, usePoll,
-  type Account, type Apy, type Apys, type Backing, type Market, type Series,
+  type Account, type Apy, type Backing, type Market,
 } from "@/lib/api";
 import { signAndSend } from "@/lib/tx";
 import { PAY_TOKENS, usdPrices, type PayWith } from "@/lib/listing";
 import { PayToken } from "@/components/PayToken";
-import { compact, money, price } from "@/lib/format";
+import { YourBacking } from "@/components/YourBacking";
+import { compact, money } from "@/lib/format";
 
 const NONE: Market[] = [];
 const NO_BACKINGS: Backing[] = [];
-const NO_SERIES: Series = [];
+
+/*
+ * beUI's sliding tabs, dressed as /list's pills: no track behind them, and
+ * the indicator inverted to the foreground so the active label reads as
+ * background on it. Classes only, so the shared defaults /markets uses stay.
+ */
+
+/// A key and its figure, one row of a summary.
+const Stat = ({ k, children, tone = "" }: { k: string; children: ReactNode; tone?: string }) => (
+  <div className="flex items-baseline justify-between gap-4 border-t border-line py-3 first:border-t-0">
+    <span className="flex-none text-[12.5px] text-muted-foreground">{k}</span>
+    <span className={`n truncate text-right text-[12.5px] font-semibold ${tone}`}>{children}</span>
+  </div>
+);
 
 /// One place to put money, whichever kind it is.
 interface Vault {
@@ -58,9 +77,10 @@ interface Vault {
   tvlNote: string;
   /// The APY column: the rate, and the window it was measured over.
   apy: { text: string; tone: string; note: string; value?: number };
+  strategy: string;
   yours: number;
   symbol?: string;
-  /// Which of the table's groups it belongs to.
+  /// Which of the toggle's groups it belongs to.
   group: "pool" | "equities" | "crypto" | "opened";
 }
 
@@ -83,7 +103,7 @@ function apyCell(a: Apy | null | undefined, empty: string) {
 }
 
 function vaultsOf(account: Account | null | undefined, markets: Market[], backings: Backing[],
-  apy: Apys | null | undefined) {
+  apy: { pool: Apy | null; markets: Record<string, Apy> } | null | undefined) {
   const out: Vault[] = [];
   const pool = account?.pool;
   if (pool) {
@@ -92,6 +112,7 @@ function vaultsOf(account: Account | null | undefined, markets: Market[], backin
       tvl: pool.aum,
       tvlNote: `${compact(pool.lpSupply)} xLP`,
       apy: apyCell(apy?.pool, "no deposits"),
+      strategy: "Default",
       yours: account!.lp.value,
       group: "pool",
     });
@@ -107,10 +128,11 @@ function vaultsOf(account: Account | null | undefined, markets: Market[], backin
     out.push({
       id: m.symbol, kind: "market", symbol: m.symbol, market: m,
       title: m.name,
-      subtitle: m.name !== m.symbol ? m.symbol : "",
+      subtitle: m.name === m.symbol ? "Listed by anyone" : m.symbol,
       tvl: m.backingUsd,
       tvlNote: o ? `of ${compact(o.depthUsd)} depth` : `${compact(m.lossBudgetUsd)} budget`,
       apy: apyCell(apy?.markets[m.symbol], "not backed yet"),
+      strategy: "First loss",
       yours: backings.find((b) => b.symbol === m.symbol)?.value ?? 0,
       group: o ? "opened" : /x$/.test(m.symbol) ? "equities" : "crypto",
     });
@@ -122,7 +144,9 @@ function vaultsOf(account: Account | null | undefined, markets: Market[], backin
  * The vault, opened: in and out of one place.
  *
  * A dialog on a desktop and a sheet on a phone, from one element whose
- * anchoring changes at `sm`. Escape and the backdrop both close it.
+ * anchoring changes at `sm` -- a centred card over a table is what a person at
+ * a desk expects, and a panel rising from the bottom is what a thumb can
+ * reach. Escape and the backdrop both close it.
  */
 function VaultDialog({ v, account, start, onClose, onDone }: {
   v: Vault; account: Account | null | undefined; start: "in" | "out";
@@ -153,7 +177,7 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
   }, [onClose]);
 
   const pool = account?.pool;
-  const lpPrice = account?.lp.price ?? 1;
+  const price = account?.lp.price ?? 1;
   const usd = Number(amount) > 0 ? Number(amount) : 0;
   const fee = v.kind === "pool"
     ? (side === "in" ? pool?.addFeePct ?? 0 : pool?.removeFeePct ?? 0) : 0;
@@ -171,7 +195,7 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
     const [path, body]: [string, Record<string, unknown>] = v.kind === "pool"
       ? side === "in"
         ? ["deposit", { amount: usd }]
-        : ["withdraw", { lpAmount: all ? account!.lp.held : usd / lpPrice }]
+        : ["withdraw", { lpAmount: all ? account!.lp.held : usd / price }]
       : side === "in"
         ? ["back-market", { symbol: v.symbol, amount: usd, payWith: paying }]
         : ["unback-market", all ? { symbol: v.symbol, all: true } : { symbol: v.symbol, amount: usd }];
@@ -185,10 +209,6 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
     } finally { setBusy(false); }
   };
 
-  const sides: ["in" | "out", string][] = [
-    ["in", v.kind === "pool" ? "Deposit" : "Back"], ["out", "Withdraw"],
-  ];
-
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
       <motion.button type="button" aria-label="Close" onClick={onClose}
@@ -199,56 +219,64 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
         initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 16, scale: 0.98 }}
         transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-        className="relative max-h-[92dvh] w-full overflow-y-auto rounded-t-[16px] border border-line
-                   bg-panel safe-b sm:max-w-[420px] sm:rounded-[16px]">
-        <div className={`${PAD} pb-5 pt-4`}>
+        className="relative max-h-[92dvh] w-full overflow-y-auto rounded-t-[24px] border border-line
+                   bg-panel safe-b sm:max-w-[460px] sm:rounded-[24px]">
+        <div className="px-5 pb-5 pt-5 sm:px-6">
           <header className="flex items-center gap-3">
-            <VaultIcon v={v} size={32} />
+            <VaultIcon v={v} />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[14px] font-medium">{v.title}</span>
-              <span className="n block truncate text-[12px] text-muted-foreground">
-                {v.kind === "pool" ? "Every market" : "First loss"} · {money(v.tvl, 0)} in
+              <span className="block truncate text-[16px] font-medium">{v.title}</span>
+              <span className="block truncate text-[12.5px] text-muted-foreground">
+                {v.strategy} · {money(v.tvl, 0)} deposited
               </span>
             </span>
             <button type="button" onClick={onClose} aria-label="Close"
-              className="press grid size-8 place-items-center rounded-[8px] text-muted-foreground
+              className="press grid size-9 place-items-center rounded-full text-muted-foreground
                          transition-colors hover:bg-panel2 hover:text-foreground">
               <X size={16} strokeWidth={1.75} />
             </button>
           </header>
 
-          <div className="mt-4">
-            <Seg options={sides} value={side}
-              onChange={(k) => { setSide(k); setAmount(""); setAll(false); setNote(null); setPayWith("USDC"); }} />
-          </div>
+          <Tabs value={side} variant="pill" className="mt-5"
+            onValueChange={(k) => {
+              setSide(k as "in" | "out"); setAmount(""); setAll(false); setNote(null); setPayWith("USDC");
+            }}>
+            <TabsList className={PILL_LIST}>
+              {(["in", "out"] as const).map((k) => (
+                <TabsTrigger key={k} value={k} className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
+                  {k === "in" ? (v.kind === "pool" ? "Deposit" : "Back") : "Withdraw"}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
           {v.kind === "market" && side === "in" && (
-            <div className="mt-4">
-              <span className={`mb-2 block ${LABEL}`}>Pay with</span>
+            <div className="mt-5">
+              <span className="mb-2 block text-[13px] text-foreground">Pay with</span>
               <div role="radiogroup" aria-label="Pay with" className="flex flex-wrap gap-2">
                 {(Object.keys(PAY_TOKENS) as PayWith[]).map((k) => (
                   <button key={k} type="button" role="radio" aria-checked={payWith === k}
                     onClick={() => { setPayWith(k); setAmount(""); }}
-                    className={`press flex h-9 items-center rounded-[8px] border pl-1.5 pr-3
-                                text-[13px] transition-colors ${payWith === k
+                    className={`press flex h-10 items-center rounded-full border pl-1.5 pr-4
+                                text-[13.5px] transition-colors ${payWith === k
                       ? "border-foreground text-foreground"
                       : "border-line text-muted-foreground hover:text-foreground"}`}>
-                    <PayToken k={k} size={22} className="gap-2" />
+                    <PayToken k={k} size={26} className="gap-2.5" />
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="mt-4">
+          <div className="mt-5">
             <div className="mb-2 flex items-baseline justify-between gap-3">
-              <label htmlFor="vault-amount" className={LABEL}>Amount</label>
+              <label htmlFor="vault-amount" className="text-[13px] text-foreground">Amount</label>
               {owner && paying === "USDC" && (
                 <button type="button"
                   onClick={() => { setAmount(ceiling.toFixed(2)); setAll(side === "out"); }}
-                  className="n text-[12px] text-muted-foreground transition-colors hover:text-foreground">
+                  className="n text-[12px] text-dim transition-colors hover:text-foreground">
                   {side === "in" ? "Wallet" : "Yours"} {money(ceiling)}
-                  <span className="ml-1.5 font-medium text-foreground">Max</span>
+                  <span className="ml-1.5 font-medium text-foreground">MAX</span>
                 </button>
               )}
             </div>
@@ -257,58 +285,68 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
                 onChange={(e) => { setAmount(e.target.value.replace(/[^\d.]/g, "")); setAll(false); }}
                 onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
                 placeholder="0.00" aria-label={`Amount to ${verb.toLowerCase()}`}
-                className="n h-12 w-full rounded-[8px] border border-line bg-panel2 pl-3.5 pr-12
-                           text-[18px] font-medium outline-none transition-colors
-                           placeholder:text-dim focus:border-foreground/40" />
-              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2">
+                className="n h-[52px] w-full rounded-[12px] border border-line bg-panel2 pl-4 pr-16
+                           text-[20px] font-medium outline-none transition-colors
+                           placeholder:text-dim focus:border-brand" />
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
                 <img src={PAY_TOKENS[paying].logo} alt="" className="size-5 rounded-full" />
               </span>
             </div>
           </div>
 
-          <div className="mt-4">
-            <KV k="You receive">
-              {!usd ? DASH : v.kind === "pool" && side === "in"
-                ? `${(usd * (1 - fee / 100) / lpPrice).toLocaleString(undefined, { maximumFractionDigits: 2 })} xLP`
-                : paying !== "USDC"
-                  ? `≈${money(usdOf(usd), 0)} backing, held as ${paying}`
-                  : money(usd * (1 - fee / 100))}
-            </KV>
-            <KV k="Fee">{fee ? `${fee}%, kept by the LPs who stay` : "None"}</KV>
-            <KV k="Yours now">{money(v.yours)}</KV>
-            <KV k={`APY, ${v.apy.note}`} tone={v.apy.tone}>{v.apy.text}</KV>
-          </div>
-
-          <div className="mt-4">
+          <div className="mt-5">
             {!owner ? (
               <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly}
-                className={`${BTN} h-11 w-full`}>
+                className="press h-[48px] w-full rounded-full bg-foreground text-[14px] font-medium
+                           text-background transition-opacity hover:opacity-90
+                           disabled:pointer-events-none disabled:opacity-35">
                 Connect wallet
               </button>
             ) : (
               <button type="button" onClick={submit} disabled={busy || !usd || over || api.readOnly}
-                className={`${BTN} h-11 w-full`}>
-                {busy ? "Confirm in your wallet…"
-                  : over ? `More than ${side === "in" ? "your wallet holds" : "is yours"}` : verb}
+                className="press h-[48px] w-full rounded-full bg-foreground text-[14px] font-medium
+                           text-background transition-opacity hover:opacity-90
+                           disabled:pointer-events-none disabled:opacity-35">
+                {busy ? "Confirm in wallet"
+                  : over ? `Over ${side === "in" ? "your balance" : "your deposit"}` : verb}
               </button>
             )}
             {api.readOnly && (
               <p className="mt-2.5 text-[12px] text-muted-foreground">
-                No chain behind this deploy. Run it locally to deposit.
+                Read-only. Deposits open with devnet.
               </p>
             )}
             {note && (
-              <p className={`mt-2.5 text-[12.5px] ${note.ok ? "text-up" : "text-down"}`}>{note.text}</p>
+              <p className={`mt-2.5 text-[12.5px] ${note.ok ? "text-up" : "text-down"}`}>
+                {note.text}
+              </p>
             )}
           </div>
+        </div>
+
+        {/* The summary, set apart the way /list sets its preview apart. */}
+        <div className="border-t border-line bg-panel2 px-5 pb-5 pt-2 sm:px-6">
+          <Stat k="You receive">
+            {!usd ? "–" : v.kind === "pool" && side === "in"
+              ? `${(usd * (1 - fee / 100) / price).toLocaleString(undefined, { maximumFractionDigits: 2 })} xLP`
+              : paying !== "USDC"
+                ? `≈${money(usdOf(usd), 0)} backing, held as ${paying}`
+                : money(usd * (1 - fee / 100))}
+          </Stat>
+          <Stat k="Fee">{fee ? `${fee}%, paid to remaining LPs` : "none"}</Stat>
+          <Stat k="Yours now">{money(v.yours)}</Stat>
+          <Stat k="APY" tone={v.apy.tone}>
+            {v.apy.text}
+            <span className="ml-1.5 font-normal text-dim">{v.apy.note}</span>
+          </Stat>
 
           {/* The risk, where the money is committed rather than on another page. */}
-          <p className="mt-4 border-t border-linesoft pt-3.5 text-[12px] leading-relaxed text-muted-foreground">
+          <p className="border-t border-line pt-3.5 text-[12px] leading-relaxed text-dim">
             {v.kind === "pool"
-              ? "The pool is short the traders' combined PnL. When they are net right it pays them, and a share is worth less than it was."
-              : `Backing is spent first when this market's traders win, and earns half the LP share of its fees. It is held as ${paying}, not swapped${
-                paying === "SOL" ? ", and counts at 80% toward the market's budget" : ""
-              }. Withdrawals come back in the mix the backing holds, and anything the market's open positions still need is refused.`}
+              ? "The pool takes the other side of traders' net PnL. When they win, xLP is worth less."
+              : `First loss when this market's traders win. Earns half the LP fee share. Held as ${paying}, not swapped${
+                paying === "SOL" ? "; counts at 80%" : ""
+              }. Withdrawals come back in the same mix, minus what open positions still need.`}
           </p>
         </div>
       </motion.div>
@@ -317,47 +355,36 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
 }
 
 /// The pool wears the venue's own mark; a market wears its token's.
-function VaultIcon({ v, size = 28 }: { v: Vault; size?: number }) {
+function VaultIcon({ v }: { v: Vault }) {
   return v.kind === "pool" || !v.market ? (
-    <span className="grid flex-none place-items-center rounded-full border border-line bg-panel2"
-      style={{ width: size, height: size }}>
-      <Mark size={Math.round(size * 0.55)} />
+    <span className="grid size-10 flex-none place-items-center rounded-full border border-line
+                     bg-panel2">
+      <Mark size={22} />
     </span>
   ) : (
-    <span className="flex-none"><TickerLogo m={v.market} size={size} /></span>
+    <span className="flex-none"><TickerLogo m={v.market} size={40} /></span>
   );
 }
 
+/*
+ * The toggle over the table, in the pills /list switches its tabs with. The
+ * groups are the market list's own, what a market tracks and who opened it,
+ * plus the one only this page needs: what is yours.
+ */
 const FILTERS = [
-  ["all", "All"], ["equities", "Equities"], ["crypto", "Crypto"], ["opened", "Opened by anyone"],
-  ["yours", "Yours"],
+  { key: "all", label: "All" },
+  { key: "equities", label: "Equities" },
+  { key: "crypto", label: "Crypto" },
+  { key: "opened", label: "Opened by anyone" },
+  { key: "yours", label: "Yours" },
 ] as const;
-type Filter = (typeof FILTERS)[number][0];
+type Filter = (typeof FILTERS)[number]["key"];
 
-/// The table holds markets only; the pool has a panel of its own.
-const keep = (v: Vault, f: Filter, q: string) =>
-  v.kind === "market"
-  && (f === "all" ? true : f === "yours" ? v.yours > 0 : v.group === f)
-  && (!q || `${v.title} ${v.symbol}`.toLowerCase().includes(q));
-
-const COLS = "grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,.9fr)] items-center gap-3 " +
-  "md:grid-cols-[minmax(0,1.5fr)_minmax(0,.9fr)_minmax(0,1fr)_minmax(0,.9fr)_minmax(0,.8fr)_minmax(0,.7fr)]";
-
-const PERIODS: [Period, string][] = [["1d", "1D"], ["7d", "7D"]];
-type Period = "1d" | "7d";
-
-/// A tape cut to the period, and rebased so it reads as the return since the
-/// cut: what a dollar in the vault then is worth now.
-function returnsOf(series: Series, period: Period): Series {
-  const from = Date.now() / 1000 - (period === "1d" ? 86_400 : 7 * 86_400);
-  const cut = series.filter((p) => p[0] >= from);
-  const rows = cut.length >= 2 ? cut : series;
-  if (rows.length < 2) return rows;
-  const base = rows[0][1];
-  return rows.map(([t, v]) => [t, (v / base - 1) * 100]);
-}
-
-const signedPct = (v: number, d = 3) => `${v >= 0 ? "+" : ""}${v.toFixed(d)}%`;
+const keep = (v: Vault, f: Filter) =>
+  f === "all" ? true
+    : f === "yours" ? v.yours > 0
+      // The pool is every market's, so it belongs under All and nowhere narrower.
+      : v.group === f;
 
 export default function Earn() {
   const wallet = useWallet();
@@ -373,233 +400,283 @@ export default function Earn() {
 
   const [open, setOpen] = useState<{ id: string; start: "in" | "out" } | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
-  const [q, setQ] = useState("");
-  const [period, setPeriod] = useState<Period>("7d");
-  const [line, setLine] = useState("pool");
 
   const vaults = useMemo(() => vaultsOf(account, markets, backings, apy),
     [account, markets, backings, apy]);
   const opened = open ? vaults.find((v) => v.id === open.id) ?? null : null;
+  // Markets first, most-backed at the top, and the pool after them: backing
+  // is the thing to choose, and the pool is what you get by not choosing.
+  const shown = useMemo(() => vaults
+    .filter((v) => keep(v, filter))
+    .sort((a, b) => (a.kind === "pool" ? 1 : b.kind === "pool" ? -1 : b.tvl - a.tvl)),
+  [vaults, filter]);
+
   const pool = account?.pool;
-  const poolVault = vaults.find((v) => v.kind === "pool");
-  const marketVaults = useMemo(() => vaults.filter((v) => v.kind === "market"), [vaults]);
-  // Most-backed at the top: backing is the thing to choose.
-  const shown = useMemo(() => marketVaults
-    .filter((v) => keep(v, filter, q.trim().toLowerCase()))
-    .sort((a, b) => b.tvl - a.tvl),
-  [marketVaults, filter, q]);
-
-  const tvl = vaults.reduce((a, v) => a + v.tvl, 0);
+  const deposited = vaults.reduce((a, v) => a + v.tvl, 0);
   const yours = vaults.reduce((a, v) => a + v.yours, 0);
-  const posted = backings.reduce((a, b) => a + b.deposited, 0);
-  const backedNow = backings.reduce((a, b) => a + b.value, 0);
-  const mine = marketVaults.filter((v) => v.yours > 0).length;
   const poolApy = apyCell(apy?.pool, "no deposits");
-
-  // The line: the pool's, or any backed market's, as the return over the period.
-  const lines: [string, string][] = [
-    ["pool", "The pool"],
-    ...marketVaults.filter((v) => (apy?.series?.markets[v.symbol!]?.length ?? 0) > 1)
-      .map((v) => [v.symbol!, v.symbol!] as [string, string]),
-  ];
-  const raw = line === "pool" ? apy?.series?.pool ?? NO_SERIES : apy?.series?.markets[line] ?? NO_SERIES;
-  const points = useMemo(() => returnsOf(raw, period), [raw, period]);
-  const lineReturn = points.length >= 2 ? points[points.length - 1][1] : null;
+  const table = useRef<HTMLElement>(null);
+  const toMarkets = () => {
+    setFilter("all");
+    table.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
-    <div className="site relative min-h-full">
+    <div className="site min-h-full">
       <SiteHeader here="/earn" actions={<WalletActions />} />
 
-      <Shell className="relative pb-14 pt-6 sm:pt-9">
-        <PageTop title="Earn"
-          lede="Back one market and take first loss on it for half the LP share of its fees, or hold the pool behind every market. Paid in SOL, USDC or USDT."
-          actions={!owner ? (
-            <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly} className={BTN}>
-              Connect wallet
-            </button>
-          ) : (
-            <>
-              <button type="button" onClick={() => setOpen({ id: "pool", start: "out" })}
-                disabled={!pool || !(account?.lp.value)} className={GHOST}>
-                Withdraw
-              </button>
+      <Shell className="pb-14 pt-4 sm:pt-8">
+        <div className="grid overflow-hidden rounded-[24px] border border-line bg-panel
+                        lg:grid-cols-[minmax(0,1fr)_440px]">
+          {/*
+           * The hero: the page's claim on the left and, on the right, the
+           * three coins that claim names, SOL, USDC and USDT on the pedestal a
+           * vault is.
+           *
+           * The render is on its own transparent ground, so the card shows
+           * through it in either theme. It is sized by the column's width, not
+           * its height, because the column narrows a long way before it gets
+           * any shorter. Hidden on a phone, where the copy takes the full
+           * width and there is no side to put it on.
+           */}
+          <section className="relative min-h-[300px] overflow-hidden">
+            {/* The front page's violet light, faint, under the render (dark mode only). */}
+            <img src="/waitlist/field.webp" alt="" aria-hidden
+              className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover
+                         opacity-45 dark:block" />
+            {/* Two renders: the dark one's glow reads as haze on white. Both are the
+                blue originals with the stand and glow shifted to the brand violet
+                (the *-violet files); the three coins keep their own colours. */}
+            <img src="/earn/hero-violet.webp" alt="" aria-hidden width={900} height={900}
+              draggable={false}
+              className="pointer-events-none absolute right-2 top-1/2 hidden h-auto
+                         w-[min(46%,320px)] -translate-y-1/2 select-none sm:block
+                         dark:!hidden" />
+            <img src="/earn/hero-dark-violet.webp" alt="" aria-hidden width={900} height={900}
+              draggable={false}
+              className="pointer-events-none absolute right-2 top-1/2 hidden h-auto
+                         w-[min(46%,320px)] -translate-y-1/2 select-none
+                         dark:sm:block" />
+            {/* Keeps the copy legible where the render's glow reaches under
+                it, and stops short of the coins themselves. */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r
+                                        from-panel via-panel/70 via-40% to-transparent to-58%" />
+            <div className="relative flex h-full flex-col justify-center px-5 py-9
+                            sm:max-w-[min(460px,58%)] sm:px-9">
+              <h1 className="font-serif-display text-[clamp(3rem,6vw,4.5rem)] leading-none
+                             tracking-[-.025em]">
+                Earn
+              </h1>
+              <p className="mt-3.5 text-[15px] leading-[1.55] text-muted-foreground">
+                Back a market you believe in with{" "}
+                <span className="whitespace-nowrap">
+                  <PayToken k="SOL" size={17} className="font-medium text-foreground" />,
+                </span>{" "}
+                <PayToken k="USDC" size={17} className="font-medium text-foreground" /> or{" "}
+                <PayToken k="USDT" size={17} className="font-medium text-foreground" />.
+              </p>
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <button type="button" onClick={toMarkets}
+                  className="press h-[48px] rounded-full bg-foreground px-6 text-[14px]
+                             font-medium text-background transition-opacity hover:opacity-90">
+                  Back a market
+                </button>
+                <button type="button" onClick={() => setOpen({ id: "pool", start: "in" })}
+                  disabled={!pool}
+                  className="text-[13.5px] text-muted-foreground underline decoration-line
+                             underline-offset-4 transition-colors hover:text-foreground
+                             hover:decoration-foreground/40 disabled:opacity-35">
+                  or join the pool
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* What the visitor holds, beside the way in. */}
+          <aside className="flex min-w-0 flex-col border-t border-line bg-panel2 px-5 py-7
+                            sm:px-9 sm:py-9 lg:border-l lg:border-t-0">
+            <h2 className="text-[16px] font-medium">The pool</h2>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">
+              One deposit across every market.
+            </p>
+
+            <div className="mt-4">
+              <Stat k="In your wallet">
+                {owner ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <AnimatedNumber value={account?.usdc ?? 0} duration={0.9}
+                      format={(n) => n.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
+                    <PayToken k="USDC" size={15} />
+                  </span>
+                ) : <span className="font-normal text-muted-foreground">not connected</span>}
+              </Stat>
+              <Stat k={`Pool APY${poolApy.text !== "–" ? `, ${poolApy.note}` : ""}`} tone={poolApy.tone}>
+                {poolApy.value != null
+                  ? <AnimatedNumber value={poolApy.value} duration={0.9}
+                      format={(n) => `${n < 0 ? "-" : ""}${Math.abs(n).toFixed(2)}%`} />
+                  : poolApy.text}
+              </Stat>
+              <Stat k="Deposited">
+                {owner ? <AnimatedNumber value={yours} duration={0.9} format={(n) => money(n)} /> : <span className="font-normal text-dim">–</span>}
+              </Stat>
+            </div>
+
+            {/* Without a wallet there is nothing to deposit from, and a greyed
+                Deposit says "unavailable" when the truth is "connect first". */}
+            {!owner ? (
+              <div className="mt-auto pt-6">
+                <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly}
+                  className="press h-[48px] w-full rounded-full bg-foreground text-[14px] font-medium
+                             text-background transition-opacity hover:opacity-90
+                             disabled:pointer-events-none disabled:opacity-35">
+                  Connect wallet
+                </button>
+              </div>
+            ) : (
+            <div className="mt-auto grid grid-cols-2 gap-2.5 pt-6">
               <button type="button" onClick={() => setOpen({ id: "pool", start: "in" })}
-                disabled={!pool} className={BTN}>
+                disabled={!pool}
+                className="press h-[48px] rounded-full bg-foreground text-[14px] font-medium
+                           text-background transition-opacity hover:opacity-90
+                           disabled:pointer-events-none disabled:opacity-35">
                 Deposit
               </button>
-            </>
-          )} />
-
-        <Tiles items={[
-          { k: "Total value locked", v: money(tvl, 0),
-            sub: pool ? `${money(pool.aum, 0)} pool · ${money(tvl - pool.aum, 0)} backing` : undefined },
-          { k: "Pool APY", tone: poolApy.tone,
-            v: poolApy.text,
-            sub: poolApy.value != null ? `Measured ${poolApy.note}` : poolApy.note },
-          { k: "Your deposits",
-            v: owner ? money(yours) : DASH,
-            sub: owner ? `${money(account?.lp.value ?? 0)} pool · ${money(backedNow)} backing` : undefined },
-          { k: "Backing return", tone: owner && backings.length ? (backedNow - posted >= 0 ? "text-up" : "text-down") : "",
-            v: owner && backings.length
-              ? `${backedNow - posted >= 0 ? "+" : "-"}${money(Math.abs(backedNow - posted))}` : DASH,
-            sub: owner && backings.length ? `On ${money(posted)} posted across ${mine} market${mine === 1 ? "" : "s"}`
-              : owner ? "Nothing backed yet" : undefined },
-        ]} />
-
-        {/* ------------------------------------------------------ the tape */}
-        <Panel
-          title={
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <h2 className="text-[14px] font-medium">Return per share</h2>
-              {lineReturn != null && (
-                <span className={`n text-[13px] font-medium ${lineReturn >= 0 ? "text-up" : "text-down"}`}>
-                  {signedPct(lineReturn)}
-                  <span className="ml-1.5 font-normal text-muted-foreground">
-                    over {period === "1d" ? "1 day" : "7 days"}
-                  </span>
-                </span>
-              )}
+              <button type="button" onClick={() => setOpen({ id: "pool", start: "out" })}
+                disabled={!pool}
+                className="press h-[48px] rounded-full border border-line text-[14px] font-medium
+                           transition-colors hover:border-foreground/40
+                           disabled:pointer-events-none disabled:opacity-35">
+                Withdraw
+              </button>
             </div>
-          }
-          aside={
-            <div className="flex items-center gap-2">
-              {lines.length > 1 && (
-                <select value={line} onChange={(e) => setLine(e.target.value)} aria-label="Vault"
-                  className="h-7 rounded-[7px] border border-line bg-panel px-2 text-[12px] outline-none">
-                  {lines.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-                </select>
-              )}
-              <Seg options={PERIODS} value={period} onChange={setPeriod} />
+            )}
+          </aside>
+        </div>
+
+        {/* ---------------------------------------------- where yours is */}
+        <YourBacking backings={backings} markets={markets}
+          onAdd={(symbol) => setOpen({ id: symbol, start: "in" })}
+          onWithdraw={(symbol) => setOpen({ id: symbol, start: "out" })} />
+
+        {/* ------------------------------------------------ the vaults */}
+        <section ref={table}
+          className="mt-5 scroll-mt-24 overflow-hidden rounded-[24px] border border-line bg-panel">
+          <div className="flex flex-wrap items-center justify-between gap-4 px-5 pb-5 pt-7 sm:px-9">
+            <div>
+              <h2 className="text-[clamp(1.375rem,2.2vw,1.625rem)] font-medium tracking-[-.02em]">
+                Back a market
+                <span className="n ml-2 text-[14px] font-normal text-dim">{shown.length}</span>
+              </h2>
+              <p className="n mt-1 text-[12.5px] text-muted-foreground">
+                <AnimatedNumber value={deposited} duration={0.9} format={(n) => money(n, 0)} /> deposited
+              </p>
             </div>
-          }>
-          <div className={`${PAD} pb-3`}>
-            <Chart points={points} format={(v) => signedPct(v)}
-              empty={apy?.series ? "Under an hour on the tape. The line starts once there is one to draw."
-                : "Nothing recorded yet."} />
+            <Tabs value={filter} onValueChange={(f) => setFilter(f as Filter)} variant="pill"
+              className="min-w-0 max-w-full">
+              <TabsList className={PILL_LIST}>
+                {FILTERS.map((f) => (
+                  <TabsTrigger key={f.key} value={f.key} className={PILL_TRIGGER}
+                    indicatorClassName={PILL_INDICATOR}>
+                    {f.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
-          <Foot>One share's value, as the change since the start of the period. Sampled every two minutes.</Foot>
-        </Panel>
 
-        {/* ------------------------------------------------------ the pool */}
-        <Panel title="Protocol vault">
-          <Head cols={COLS}>
+          {/*
+           * One grid for the header and every row, so a column cannot drift
+           * between them. Below `md` the APY and Strategy columns go and the
+           * row keeps what a thumb needs to choose: which vault, how big, and
+           * the way in.
+           */}
+          <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_28px] items-center
+                          gap-4 border-t border-line px-5 py-3 text-[12.5px]
+                          text-muted-foreground sm:px-9
+                          md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,.8fr)_28px]">
             <span>Vault</span>
             <span>TVL</span>
             <span className="hidden md:block">APY</span>
-            <span className="hidden md:block">Utilization</span>
-            <span className="hidden md:block">Fee in / out</span>
-            <span className="text-right md:text-left">Yours</span>
-          </Head>
-          {poolVault && pool ? (
-            <button type="button" onClick={() => setOpen({ id: "pool", start: "in" })}
-              className={`${COLS} w-full ${ROW} text-left transition-colors hover:bg-panel2`}>
-              <span className="flex min-w-0 items-center gap-2.5">
-                <VaultIcon v={poolVault} />
-                <span className="min-w-0">
-                  <span className="block truncate font-medium">The pool</span>
-                  <span className="block truncate text-[12px] text-muted-foreground">Every market · xLP</span>
-                </span>
-              </span>
-              <span className="n min-w-0">
-                <span className="block truncate">{money(pool.aum, 0)}</span>
-                <span className="block truncate text-[12px] text-muted-foreground">{compact(pool.lpSupply)} xLP</span>
-              </span>
-              <span className="n hidden min-w-0 md:block">
-                <span className={`block truncate ${poolVault.apy.tone}`}>{poolVault.apy.text}</span>
-                <span className="block truncate text-[12px] text-muted-foreground">{poolVault.apy.note}</span>
-              </span>
-              <span className="n hidden min-w-0 md:block">
-                <span className="block truncate">{pool.utilization.toFixed(2)}%</span>
-                <span className="block truncate text-[12px] text-muted-foreground">of {pool.maxUtilization}% cap</span>
-              </span>
-              <span className="n hidden md:block">{pool.addFeePct}% / {pool.removeFeePct}%</span>
-              <span className="n text-right md:text-left">{poolVault.yours > 0 ? money(poolVault.yours) : DASH}</span>
-            </button>
-          ) : <Empty>{api.readOnly ? "No chain behind this deploy." : "Reading the pool."}</Empty>}
-        </Panel>
+            <span className="hidden md:block">Strategy</span>
+            <span className="hidden md:block">Yours</span>
+            <span />
+          </div>
 
-        {/* ---------------------------------------------------- the markets */}
-        <Panel>
-          <PanelTabs tabs={FILTERS.map(([k, l]) => [k, <>{l}{k === "yours" && <Count n={mine} />}</>])}
-            value={filter} onChange={setFilter}
-            aside={
-              <label className="relative block">
-                <Search size={14} strokeWidth={1.75}
-                  className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-dim" />
-                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search"
-                  aria-label="Search markets"
-                  className="h-8 w-[150px] rounded-[7px] border border-line bg-panel pl-8 pr-2.5 text-[12.5px]
-                             outline-none transition-colors placeholder:text-dim focus:border-foreground/40
-                             sm:w-[190px]" />
-              </label>
-            } />
-          <Head cols={COLS}>
-            <span>Market</span>
-            <span>Backing</span>
-            <span className="hidden md:block">APY</span>
-            <span className="hidden md:block">Budget</span>
-            <span className="hidden md:block">Status</span>
-            <span className="text-right md:text-left">Yours</span>
-          </Head>
           {shown.length === 0 && (
-            <Empty>
-              {filter === "yours" ? "Nothing backed yet. Open any market in the list to start."
-                : q ? "No market matches." : "No markets in this group yet."}
-            </Empty>
+            <p className="border-t border-line px-5 py-10 text-center text-[13px] text-muted-foreground">
+              {filter === "yours"
+                ? "Nothing deposited yet."
+                : "None yet."}
+            </p>
           )}
-          {shown.map((v) => {
-            const m = v.market!;
-            return (
-              <button key={v.id} type="button" onClick={() => setOpen({ id: v.id, start: "in" })}
-                className={`${COLS} w-full ${ROW} text-left transition-colors hover:bg-panel2`}>
-                <span className="flex min-w-0 items-center gap-2.5">
-                  <VaultIcon v={v} />
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium">{v.title}</span>
-                    <span className="n block truncate text-[12px] text-muted-foreground">
-                      {v.subtitle ? `${v.subtitle} · ` : ""}{price(m.price)}
-                    </span>
+          {shown.map((v) => (
+            <button key={v.id} type="button" onClick={() => setOpen({ id: v.id, start: "in" })}
+              className="group grid w-full grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_28px]
+                         items-center gap-4 border-t border-line px-5 py-4 text-left
+                         transition-colors hover:bg-panel2 sm:px-9
+                         md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,.8fr)_28px]">
+              <span className="flex min-w-0 items-center gap-3">
+                <VaultIcon v={v} />
+                <span className="min-w-0">
+                  <span className="block truncate text-[14px] font-medium">{v.title}</span>
+                  <span className="block truncate text-[12.5px] text-muted-foreground">
+                    {v.subtitle}
                   </span>
                 </span>
-                <span className="n min-w-0">
-                  <span className="block truncate">
-                    <span className="md:hidden">{compact(v.tvl)}</span>
-                    <span className="hidden md:inline">{money(v.tvl, 0)}</span>
-                  </span>
-                  <span className="block truncate text-[12px] text-muted-foreground">{v.tvlNote}</span>
+              </span>
+              <span className="min-w-0">
+                {/* Compact on a phone, where the full figure is wider than
+                    its column and would be cut to "$10,007,...": a number
+                    with its end missing is worse than a rounder one. */}
+                <span className="n block truncate text-[14px] font-semibold">
+                  <AnimatedNumber value={v.tvl} duration={0.9} format={compact} className="md:hidden" />
+                  <AnimatedNumber value={v.tvl} duration={0.9} format={(n) => money(n, 0)}
+                    className="hidden md:inline" />
                 </span>
-                <span className="n hidden min-w-0 md:block">
-                  <span className={`block truncate ${v.apy.tone}`}>
-                    {v.apy.text}
-                  </span>
-                  <span className="block truncate text-[12px] text-muted-foreground">{v.apy.note}</span>
+                <span className="n block truncate text-[12px] text-muted-foreground">
+                  {v.tvlNote}
                 </span>
-                <span className="n hidden min-w-0 md:block">
-                  <span className="block truncate">{compact(m.observed?.budgetUsd ?? m.lossBudgetUsd)}</span>
-                  <span className="block truncate text-[12px] text-muted-foreground">{m.maxLeverage}x max</span>
+              </span>
+              <span className="hidden min-w-0 md:block">
+                <span className={`n block truncate text-[14px] font-semibold ${v.apy.tone}`}>
+                  {v.apy.value != null
+                    ? <AnimatedNumber value={v.apy.value} duration={0.9}
+                        format={(n) => `${n < 0 ? "-" : ""}${Math.abs(n).toFixed(2)}%`} />
+                    : v.apy.text}
                 </span>
-                <span className="hidden md:block">
-                  <span className={`inline-block rounded-[5px] border px-1.5 py-0.5 text-[11px] ${
-                    v.tvl > 0 ? "border-up/40 text-up" : "border-line text-dim"}`}>
-                    {v.tvl > 0 ? "Backed" : "Unbacked"}
-                  </span>
+                <span className="n block truncate text-[12px] text-muted-foreground">
+                  {v.apy.note}
                 </span>
-                <span className="n text-right md:text-left">{v.yours > 0 ? money(v.yours) : DASH}</span>
-              </button>
-            );
-          })}
-          <Foot>
-            {money(marketVaults.reduce((a, v) => a + v.tvl, 0), 0)} behind {marketVaults.length} markets.
-            Anyone can <a href="/list" className="text-foreground underline underline-offset-4">open one</a>.
-          </Foot>
-        </Panel>
+              </span>
+              <span className="hidden md:block">
+                <span className={`inline-block rounded-full border px-3 py-1 text-[12px] ${
+                  v.kind === "pool" ? "border-foreground/40 text-foreground"
+                    : "border-line text-muted-foreground"}`}>
+                  {v.strategy}
+                </span>
+              </span>
+              <span className="n hidden truncate text-[13.5px] md:block">
+                {v.yours > 0 ? money(v.yours) : <span className="text-dim">–</span>}
+              </span>
+              <ChevronRight size={18} strokeWidth={1.75}
+                className="justify-self-end text-dim transition-transform duration-200
+                           group-hover:translate-x-0.5 group-hover:text-foreground" />
+            </button>
+          ))}
 
-        {/* -------------------------------------------------- your backing */}
-        {backings.length > 0 && (
-          <YourBacking backings={backings} markets={markets}
-            onAdd={(s) => setOpen({ id: s, start: "in" })}
-            onWithdraw={(s) => setOpen({ id: s, start: "out" })} />
-        )}
+          {/* Where the table ends, the way to make it longer: every market
+              anybody opens becomes a vault here. */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line
+                          bg-panel2 px-5 py-4 text-[13px] text-muted-foreground sm:px-9">
+            Every new market becomes a vault.
+            <a href="/list"
+              className="press flex h-9 flex-none items-center rounded-full border border-line px-4
+                         text-[13px] font-medium text-foreground transition-colors
+                         hover:border-foreground/40">
+              Open a market
+            </a>
+          </div>
+        </section>
       </Shell>
 
       <AnimatePresence>
@@ -611,76 +688,5 @@ export default function Earn() {
 
       <SiteFooter />
     </div>
-  );
-}
-
-const TOKENS: PayWith[] = ["SOL", "USDC", "USDT"];
-const amount = (sym: string, n: number) =>
-  n.toLocaleString(undefined, { maximumFractionDigits: sym === "SOL" ? 4 : 2 });
-
-const SMALLBTN = "press h-7 rounded-[6px] bg-foreground px-2.5 text-[12px] font-medium text-background " +
-  "transition-opacity hover:opacity-90";
-const SMALLGHOST = "press h-7 rounded-[6px] border border-line px-2.5 text-[12px] font-medium " +
-  "transition-colors hover:border-foreground/40";
-
-/// The mix each backing is held in, and the way in and out of it. The
-/// vault table answers "where could my money go"; this answers "where is it",
-/// and what comes back on withdrawal.
-function YourBacking({ backings, markets, onWithdraw, onAdd }: {
-  backings: Backing[]; markets: Market[];
-  onWithdraw: (symbol: string) => void; onAdd: (symbol: string) => void;
-}) {
-  const cols = "grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] items-center gap-3 " +
-    "md:grid-cols-[minmax(0,1.4fr)_minmax(0,.9fr)_minmax(0,.9fr)_minmax(0,1.4fr)_auto]";
-  return (
-    <Panel title="Your backing">
-      <Head cols={cols}>
-        <span>Market</span>
-        <span>Worth now</span>
-        <span className="hidden md:block">Posted</span>
-        <span className="hidden md:block">Held as</span>
-        <span />
-      </Head>
-      {backings.map((b) => {
-        const m = markets.find((x) => x.symbol === b.symbol);
-        const diff = b.value - b.deposited;
-        const mix = TOKENS.filter((k) => (b.held[k] ?? 0) > 0);
-        return (
-          <div key={b.symbol} className={`${cols} ${ROW}`}>
-            <span className="flex min-w-0 items-center gap-2.5">
-              {m && <TickerLogo m={m} size={28} />}
-              <span className="min-w-0">
-                <a href={`/trade?symbol=${b.symbol}`} className="block truncate font-medium hover:underline">
-                  {m?.name ?? b.symbol}
-                </a>
-                <span className={`block truncate text-[12px] ${b.opening ? "text-brand" : b.tradeable ? "text-up" : "text-dim"}`}>
-                  {b.opening ? "Opening auction" : b.tradeable ? `Live · ${compact(b.budgetUsd)} budget` : "Not live"}
-                </span>
-              </span>
-            </span>
-            <span className="n min-w-0">
-              <span className="block truncate">{money(b.value)}</span>
-              <span className={`block truncate text-[12px] ${diff >= 0 ? "text-up" : "text-down"}`}>
-                {diff >= 0 ? "+" : "-"}{money(Math.abs(diff))}
-              </span>
-            </span>
-            <span className="n hidden md:block">{money(b.deposited)}</span>
-            <span className="hidden flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] md:flex">
-              {mix.length === 0 ? <span className="text-dim">Nothing left</span>
-                : mix.map((k) => (
-                  <span key={k} className="n inline-flex items-center gap-1">
-                    {amount(k, b.held[k])} <PayToken k={k} size={14} />
-                  </span>
-                ))}
-            </span>
-            <span className="flex gap-1.5">
-              <button type="button" onClick={() => onAdd(b.symbol)} className={SMALLBTN}>Add</button>
-              <button type="button" onClick={() => onWithdraw(b.symbol)} className={SMALLGHOST}>Withdraw</button>
-            </span>
-          </div>
-        );
-      })}
-      <Foot>Withdrawals come back in the mix the backing holds, not swapped.</Foot>
-    </Panel>
   );
 }
