@@ -124,6 +124,70 @@ visible rather than something to work out. Wallets the venue runs itself, such
 as devnet's market maker, earn points like anyone else but are left off
 the ranking.
 
+## Ranks
+
+A wallet holds two ranks, both read off its `Trader` account. Neither is a
+second ledger: a rank is what anyone would work out from the same figures,
+and the thresholds are in the site's source (`web/src/lib/ranks.ts`).
+
+A rank never changes points. What it changes is USDC-side, and takes effect
+with mainnet, when the program carries it. Until then the Rewards page shows
+the ladder and the perk a rank will bring.
+
+### Trading rank
+
+By points, all time.
+
+| Rank | Points | Fee discount at mainnet |
+| --- | --- | --- |
+| Trader | 0 | 0 percent |
+| Regular | 10,000 | 2.5 percent |
+| Desk | 100,000 | 5 percent |
+| Whale | 1,000,000 | 7.5 percent |
+| Titan | 10,000,000 | 10 percent |
+
+The discount is off every open and close fee, on every market. It does not
+stack with the referral discount or the deployer discount; the largest
+applies.
+
+### Referral rank
+
+By active referees: wallets that took your code and have filled at least one
+order. Referrals are one level deep; the program records only the direct
+referrer.
+
+| Rank | Active referees | Referral share at mainnet |
+| --- | --- | --- |
+| Referrer I | 0 | 10 percent |
+| Referrer II | 5 | 15 percent |
+| Referrer III | 20 | 20 percent |
+| Referrer IV | 50 | 25 percent |
+
+The share is of every fee a referee pays, in USDC, and comes out of the
+protocol's cut as it does today. A referee's own discount stays at 10
+percent whatever their referrer's rank.
+
+## Quests and seasons
+
+The Rewards page lists two kinds of quest for each ladder.
+
+* **Rank quests** are the rungs themselves: earn the next threshold of
+  points, or refer the next count of active traders.
+* **Season quests** are the things the venue is for, done once: trade
+  $1,000 and $10,000, take a referral code, refer a trader who trades, open
+  a market, back one with $100, hold $1,000 in the pool. On the referral
+  ladder: refer one and five traders who trade, $100,000 traded by your
+  referrals, $10 earned from them.
+
+Every quest is measured from the wallet's on-chain figures, so finishing one
+is never something to submit or claim. What a finished season quest is worth
+at mainnet is set before mainnet and not before; the page prints no number
+that could later move.
+
+Seasons are Devnet, which is running now, then Season 1 from mainnet, and
+Seasons 2 and 3 after it. Devnet points and ranks are read at mainnet and
+credited under rules set before then (see [Devnet](devnet.md)).
+
 ## Rules changelog
 
 Rules change only going forward. Points already earned are never recounted,
@@ -132,3 +196,4 @@ and every change is listed here with the date it took effect.
 | Version | From | Change |
 | --- | --- | --- |
 | v1 | Season 1 | The rules on this page. |
+| v2 | 2026-09-30 | Ranks, quests and seasons added. Nothing about points changed. |
