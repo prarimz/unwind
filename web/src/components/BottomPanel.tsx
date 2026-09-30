@@ -290,7 +290,7 @@ export function BottomPanel({
       : "flex flex-none flex-col bg-panel"}>
       <Tabs value={tab} onValueChange={setTab}
         className={mobile ? "flex-none border-b border-line px-3 py-2.5"
-          : docked ? "strip-scroll flex-none border-b border-line px-3 py-2"
+          : docked ? "strip-scroll flex-none border-b border-line px-3"
           : "flex-none border-b border-line px-5 py-3 sm:px-6"}>
         <TabsList>
           <TabsTrigger value="positions">
