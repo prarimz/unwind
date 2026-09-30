@@ -447,7 +447,7 @@ function RankHero({ ladder, unit, name, line, perks, figures, action, under }: {
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-panel
                                     via-panel/60 to-transparent" />
         <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-9">
-          <Emblem tint={tint} size={168} locked={!ladder} glow />
+          <Emblem tint={tint} size={210} locked={!ladder} glow />
           <div className="min-w-0 flex-1">
             <div className={CAPS}>{name ?? "Not connected"}</div>
             <div className="font-serif-display mt-2 text-[clamp(2.4rem,5vw,3.4rem)] leading-none tracking-[-.02em]">
@@ -568,15 +568,17 @@ function RankRow({ ladder, rungs, foot }: {
       <div className="strip-scroll">
         <div className="grid min-w-[640px]" style={{ gridTemplateColumns: `repeat(${rungs.length}, minmax(0, 1fr))` }}>
           {rungs.map((x, i) => {
-            const on = i === level, held = i <= level;
+            // With nobody connected there is nothing to compare against, so
+            // the ladder shows every rank as it is rather than all drained.
+            const on = i === level, held = ladder == null || i <= level;
             return (
               <div key={x.name} className={`relative flex flex-col items-center border-l border-line px-3 pb-6 pt-5
                                             text-center first:border-l-0 ${on ? "bg-panel2" : ""}`}>
                 <span className={`h-5 text-[10.5px] font-medium uppercase tracking-[.12em] ${
                   on ? "text-brand" : held ? "text-muted-foreground" : "text-dim"}`}>
-                  {on ? "Current" : held ? "Held" : "Locked"}
+                  {on ? "Current" : ladder == null ? "" : held ? "Held" : "Locked"}
                 </span>
-                <div className="mt-3"><Emblem tint={x.tint} size={72} locked={!held} glow={on} /></div>
+                <div className="mt-3"><Emblem tint={x.tint} size={120} locked={!held} glow={on} /></div>
                 <span className={`mt-4 text-[15px] font-medium ${held ? "" : "text-dim"}`}>{x.name}</span>
                 <span className="n mt-1 text-[11.5px] text-muted-foreground">{x.at}</span>
                 <span className={`n mt-0.5 text-[11.5px] ${on ? "text-foreground" : "text-muted-foreground"}`}>{x.perk}</span>
