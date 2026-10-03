@@ -72,7 +72,7 @@ export function MarketHeader({
   }
 
   return (
-    <header className="strip-scroll flex flex-none items-center gap-5 border-b border-line
+    <header className="strip-scroll fade-right flex flex-none items-center gap-5 border-b border-line pr-10
                        bg-panel px-4 py-2">
       <button onClick={onOpen} className="flex flex-none items-center gap-2.5">
         <TickerLogo m={m} size={26} />

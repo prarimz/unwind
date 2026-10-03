@@ -68,8 +68,8 @@ export default function RiskPage() {
             <h2 className="text-[16px] font-medium">Per market</h2>
             <p className="mt-1 text-[12.5px] text-muted-foreground">As the program holds them now.</p>
           </div>
-          <div className={`${COLS} border-t border-line px-5 py-2.5 text-[11px] font-medium uppercase tracking-[.08em] text-muted-foreground sm:px-7`}>
-            <span>Market</span><span>Leverage</span><span>Maint.</span><span>Open fee</span>
+          <div className={`${COLS} whitespace-nowrap border-t border-line px-5 py-2.5 text-[11px] font-medium uppercase tracking-[.06em] text-muted-foreground sm:px-7`}>
+            <span>Market</span><span>Lev.</span><span>Maint.</span><span>Fee</span>
             <span className="hidden md:block">Backing</span><span className="hidden md:block">Budget</span>
             <span className="hidden md:block">Open interest</span><span className="hidden md:block">Source</span>
           </div>

@@ -147,7 +147,10 @@ function Funding({ m }: { m: Market }) {
     <Stat label="1h funding" help="Per hour. Positive: longs pay shorts. Both pay the pool to borrow.">
       {/* Signed, because which side is paying is the entire content of a
           funding rate: an unsigned "0.004%" is a number you cannot act on. */}
-      <span className={tone(-f)}>{(f >= 0 ? "+" : "") + f.toFixed(4)}%</span>
+      {/* A rate that rounds to zero is zero: no sign, no colour. */}
+      <span className={Math.abs(f) < 0.00005 ? "" : tone(-f)}>
+        {Math.abs(f) < 0.00005 ? "0.0000" : (f >= 0 ? "+" : "") + f.toFixed(4)}%
+      </span>
       <span className="ml-2 text-muted-foreground">{clock(toNextHour(now))}</span>
     </Stat>
   );

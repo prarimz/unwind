@@ -314,9 +314,63 @@
    * from a tap that missed, and the screen reads as unresponsive while the
    * order is in flight.
    */
-  .press {
-    transition: transform 160ms var(--ease-out-strong);
+  /*
+   * Every control changes colour over the same short ease, so a hover never
+   * snaps. Zero specificity (`:where`), so any element that names its own
+   * transition keeps it.
+   */
+  :where(a, button, [role="tab"], [role="radio"], input, select, summary) {
+    transition-property: color, background-color, border-color, opacity, box-shadow;
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease-out-strong);
   }
+  .press {
+    transition: transform 160ms var(--ease-out-strong), color 150ms, background-color 150ms,
+      border-color 150ms, opacity 150ms;
+  }
+
+  /*
+   * A keyboard user sees where they are; a mouse user does not get a ring
+   * on every click. Nothing on the site drew one before.
+   */
+  :focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none; }
+
+  ::selection { background: color-mix(in srgb, var(--foreground) 18%, transparent); }
+
+  /*
+   * The wallet picker is the adapter's own modal, in its own navy and
+   * purple. Same panel, line, radius and type as everything else here.
+   */
+  .wallet-adapter-modal-wrapper {
+    background: var(--color-panel) !important;
+    border: 1px solid var(--color-line);
+    border-radius: 24px !important;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .5) !important;
+    font-family: var(--font-sans) !important;
+  }
+  .wallet-adapter-modal-overlay { background: rgba(0, 0, 0, .55) !important; backdrop-filter: blur(4px); }
+  .wallet-adapter-modal-title { color: var(--foreground) !important; font-size: 20px !important; font-weight: 600 !important; }
+  .wallet-adapter-modal-button-close { background: var(--color-panel2) !important; }
+  .wallet-adapter-modal-button-close svg { fill: var(--muted-foreground) !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button {
+    color: var(--foreground) !important; font-family: var(--font-sans) !important;
+    font-weight: 500 !important; border-radius: 14px !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button:not([disabled]):hover { background: var(--color-panel2) !important; }
+  .wallet-adapter-modal-list-more { color: var(--muted-foreground) !important; font-family: var(--font-sans) !important; }
+  .wallet-adapter-modal-list-more svg { fill: var(--muted-foreground) !important; }
+  .wallet-adapter-button-end-icon, .wallet-adapter-modal-list .wallet-adapter-button span {
+    color: var(--muted-foreground) !important; font-size: 12.5px !important;
+  }
+
+  /* A strip that scrolls sideways fades at its end, so a cut-off figure reads
+     as more to the right rather than as a broken layout. */
+  .fade-right { mask-image: linear-gradient(to right, black calc(100% - 40px), transparent); }
   .press:active { transform: scale(0.97); }
   .press:disabled:active { transform: none; }
 

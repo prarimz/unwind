@@ -538,7 +538,7 @@ export default function Markets() {
                     <span className="block truncate text-[14px] font-medium">{m.name}</span>
                     <span className="block truncate text-[11.5px] text-muted-foreground">
                       {m.symbol}
-                      {m.observed ? " · opened by anyone" : " · Pyth"}
+                      <span className="hidden sm:inline">{m.observed ? " · opened by anyone" : " · Pyth"}</span>
                     </span>
                   </span>
                 </span>

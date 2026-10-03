@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import "@/site/serif.css";
 import {
   ArrowLeftRight, ArrowUpRight, BookOpen, ChartPie, Gift, LayoutGrid, Menu, Search, Sprout, X,
@@ -130,16 +130,21 @@ export function SiteHeader({ here, tradeHref = "/trade", actions }: {
       </div>
       <nav className="strip-scroll hidden items-center gap-1 px-4 pb-3 sm:px-6 lg:flex" aria-label="Pages">
         {NAV.map((l, i) => (
-          <a key={l.href} href={l.href === "/trade" ? tradeHref : l.href}
+          <Fragment key={l.href}>
+          {/* A hairline before the links that leave the app, drawn on its
+              own: a left border on a rounded link curved into a bracket. */}
+          {i === 5 && <span aria-hidden className="mx-2 h-5 w-px flex-none bg-line" />}
+          <a href={l.href === "/trade" ? tradeHref : l.href}
             {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
             aria-current={here === l.href ? "page" : undefined}
             className={`flex h-9 flex-none items-center gap-2 rounded-full px-3.5 text-[14px]
-                        transition-colors ${i === 5 ? "ml-3 border-l border-line pl-6" : ""} ${here === l.href
+                        transition-colors ${here === l.href
               ? "font-medium text-foreground"
               : "text-muted-foreground hover:text-foreground"}`}>
             <l.Icon size={16} strokeWidth={2} aria-hidden />
             {l.label}
           </a>
+          </Fragment>
         ))}
         <span className="ml-auto hidden items-center gap-2 text-[13px] text-muted-foreground xl:flex">
           <span className="size-1.5 rounded-full bg-up" />

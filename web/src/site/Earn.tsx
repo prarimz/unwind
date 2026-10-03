@@ -59,10 +59,10 @@ const COLS = "grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_auto] items-center g
 /// A figure with its caption and one line, for the row under the hero.
 export function Tile({ k, v, sub, tone = "" }: { k: string; v: ReactNode; sub?: ReactNode; tone?: string }) {
   return (
-    <div className="rounded-[20px] border border-line bg-panel px-6 py-5">
-      <div className="text-[13px] text-muted-foreground">{k}</div>
-      <div className={`n mt-2.5 text-[28px] font-semibold leading-none tracking-[-.02em] ${tone}`}>{v}</div>
-      <div className="n mt-2 min-h-[16px] text-[12.5px] text-muted-foreground">{sub}</div>
+    <div className="min-w-0 rounded-[16px] border border-line bg-panel px-3.5 py-3.5 sm:rounded-[20px] sm:px-6 sm:py-5">
+      <div className="truncate text-[12px] text-muted-foreground sm:text-[13px]">{k}</div>
+      <div className={`n mt-2 truncate text-[18px] font-semibold leading-none tracking-[-.02em] sm:mt-2.5 sm:text-[28px] ${tone}`}>{v}</div>
+      <div className="n mt-2 hidden min-h-[16px] truncate text-[12.5px] text-muted-foreground sm:block">{sub}</div>
     </div>
   );
 }
@@ -514,9 +514,9 @@ export default function Earn() {
                 </button>
                 <button type="button" onClick={() => setOpen({ id: "pool", start: "in" })}
                   disabled={!pool}
-                  className="text-[13.5px] text-muted-foreground underline decoration-line
-                             underline-offset-4 transition-colors hover:text-foreground
-                             hover:decoration-foreground/40 disabled:opacity-35">
+                  className="relative text-[13.5px] text-foreground/80 underline decoration-foreground/30
+                             underline-offset-4 hover:text-foreground hover:decoration-foreground/60
+                             disabled:opacity-35">
                   or join the pool
                 </button>
               </div>
@@ -586,7 +586,7 @@ export default function Earn() {
 
         {/* Three figures under the hero, Kurate's row: what is backed across
             every vault, what the pool can still lend, the best rate on offer. */}
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
           <Tile k="Total backed" v={<AnimatedNumber value={deposited} duration={0.9} format={(n) => money(n, 0)} />}
             sub={`${vaults.length} vaults`} />
           <Tile k="Free liquidity" v={pool ? money(pool.free, 0) : "–"}
