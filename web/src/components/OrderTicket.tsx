@@ -246,16 +246,19 @@ export function OrderTicket({
 
   // A reduce-only order posts no margin and takes no capacity (it hands size
   // back), so it is measured against the position instead of the account.
+  // Said once, under the button, in the words a desk would use. The button
+  // itself keeps its name: a control that turns into a red sentence reads
+  // as an alarm, and the trader still has to find out what to press.
   const warn =
-    stale ? `Price feed stale (${Math.round(ageSec!)}s). Orders paused.`
+    stale ? `Price feed ${ageSec! >= 120 ? `${Math.round(ageSec! / 60)} min` : `${Math.round(ageSec!)}s`} behind. Orders paused.`
     : reduceOnly
-      ? !pos ? `No ${m.symbol} position to reduce`
+      ? !pos ? `No ${m.symbol} position to reduce.`
         : pos.isLong === (side === "long")
-          ? `Choose ${pos.isLong ? "Short" : "Long"} to reduce a ${pos.isLong ? "long" : "short"}`
+          ? `Choose ${pos.isLong ? "Short" : "Long"} to reduce a ${pos.isLong ? "long" : "short"}.`
           : ""
     : size <= 0 ? ""
-    : account && calc.debit > avail ? `Needs ${money(calc.debit)} margin`
-    : calc.capped ? `Above ${side} capacity for this market`
+    : account && calc.debit > avail ? `Not enough margin. ${money(calc.debit)} needed, ${money(avail)} free.`
+    : calc.capped ? `Over this market's ${side} capacity.`
     : "";
 
   /*
@@ -612,22 +615,18 @@ export function OrderTicket({
           type="button"
           disabled={busy || size <= 0 || !!warn || stale
             || (mode === "limit" && !reduceOnly && !Number(limitPrice))}
-          // Filled with the side's colour, the same as the switch above it.
-          // The page's background ink is dark on the bright dark-theme green
-          // and red and pale on the deeper light-theme ones, so it clears
-          // both without a colour of its own.
+          // Filled with the side's colour, the same as the switch above it,
+          // and simply dimmed when the order cannot go.
           onClick={submit}
           className={`press mt-5 flex min-h-[48px] w-full items-center justify-center rounded-full
-                      px-4 text-center font-medium transition-opacity ${warn
-            ? "border border-down/30 bg-down/[.06] text-[13px] text-down"
-            : `${side === "long" ? "bg-up" : "bg-down"} text-[14px] text-background
-               hover:opacity-90 disabled:opacity-35`}
-                      disabled:pointer-events-none`}>
-          {/* The reason the order cannot go is said on the button itself, not
-              under a greyed one: one place to look, and it reads as a state
-              rather than an error stacked on a dead control. */}
-          {warn || cta}
+                      px-4 text-center text-[14px] font-medium text-background transition-opacity
+                      hover:opacity-90 disabled:pointer-events-none disabled:opacity-40
+                      ${side === "long" ? "bg-up" : "bg-down"}`}>
+          {cta}
         </button>
+        {warn && (
+          <p className="mt-2.5 text-center text-[12px] leading-relaxed text-muted-foreground">{warn}</p>
+        )}
       </div>
 
       <div className="mt-2 border-t border-line bg-panel2 px-5 py-1.5">
