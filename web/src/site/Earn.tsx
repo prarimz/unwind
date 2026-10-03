@@ -60,8 +60,8 @@ const NO_BACKINGS: Backing[] = [];
 /// A key and its figure, one row of a summary.
 const Stat = ({ k, children, tone = "" }: { k: string; children: ReactNode; tone?: string }) => (
   <div className="flex items-baseline justify-between gap-4 border-t border-line py-3 first:border-t-0">
-    <span className="flex-none text-[12.5px] text-muted-foreground">{k}</span>
-    <span className={`n truncate text-right text-[12.5px] font-semibold ${tone}`}>{children}</span>
+    <span className="flex-none text-[13.5px] text-muted-foreground">{k}</span>
+    <span className={`n truncate text-right text-[13.5px] font-semibold ${tone}`}>{children}</span>
   </div>
 );
 
@@ -439,7 +439,7 @@ export default function Earn() {
            * any shorter. Hidden on a phone, where the copy takes the full
            * width and there is no side to put it on.
            */}
-          <section className="relative min-h-[300px] overflow-hidden">
+          <section className="relative min-h-[280px] overflow-hidden bg-gradient-to-br from-panel to-panel2 dark:from-transparent dark:to-transparent">
             {/* The front page's violet light, faint, under the render (dark mode only). */}
             <img src="/waitlist/field.webp" alt="" aria-hidden
               className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover

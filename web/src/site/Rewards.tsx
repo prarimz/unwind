@@ -153,7 +153,7 @@ export default function RewardsPage() {
       <Shell className="pb-14 pt-4 sm:pt-8">
         <div className="grid overflow-hidden rounded-[24px] border border-line bg-panel
                         lg:grid-cols-[minmax(0,1fr)_440px]">
-          <section className="relative min-h-[320px] overflow-hidden">
+          <section className="relative min-h-[280px] overflow-hidden bg-gradient-to-br from-panel to-panel2 dark:from-transparent dark:to-transparent">
             {/* The front page's violet light and the glass mark, as /earn
                 carries its coins. Hidden on a phone. */}
             <img src="/waitlist/field.webp" alt="" aria-hidden
@@ -336,8 +336,8 @@ export default function RewardsPage() {
 /// One key and its figure, as /list's preview writes them.
 const Stat = ({ k, children }: { k: string; children: ReactNode }) => (
   <div className="flex items-baseline justify-between gap-4 border-t border-line py-3 first:border-t-0">
-    <span className="flex-none text-[12.5px] text-muted-foreground">{k}</span>
-    <span className="n truncate text-right text-[12.5px] font-semibold">{children}</span>
+    <span className="flex-none text-[13.5px] text-muted-foreground">{k}</span>
+    <span className="n truncate text-right text-[13.5px] font-semibold">{children}</span>
   </div>
 );
 

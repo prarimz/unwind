@@ -53,7 +53,7 @@ const NONE: Market[] = [];
 
 const FIELD =
   "w-full rounded-[10px] border border-line bg-panel2 px-3.5 text-[13.5px] outline-none " +
-  "transition-colors placeholder:text-dim focus:border-brand";
+  "transition-colors placeholder:text-dim focus:border-foreground/40";
 
 /// Round numbers for a listing's backing. Smaller than a backer's, because
 /// the lister is opening the door, not underwriting the whole room.

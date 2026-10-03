@@ -231,7 +231,7 @@ export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
     <footer className="safe-b">
       <div className="relative overflow-hidden rounded-t-[10px] border-t border-line bg-panel">
         <img src="/waitlist/field.webp" alt="" aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] w-full object-cover opacity-55
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] w-full object-cover opacity-25 dark:opacity-55
                      [mask-image:linear-gradient(to_top,black_35%,transparent)]" />
         <div className="relative grid gap-10 px-6 pt-12 sm:px-10 md:grid-cols-[1.2fr_2fr] md:pt-16">
           <div>
@@ -268,7 +268,7 @@ export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
 
         {/* The name across the foot, cropped by the panel so it reads as a mark, not a line. */}
         <div aria-hidden className="font-serif-display relative -mb-[.1em] mt-4 select-none px-4
-                                    leading-[.85] tracking-[-.035em] text-[#e2d9ff] sm:px-8"
+                                    leading-[.85] tracking-[-.035em] text-foreground/[.07] dark:text-[#e2d9ff] sm:px-8"
           style={{ fontSize: "clamp(96px, 22vw, 330px)" }}>
           unwind
         </div>
