@@ -204,7 +204,6 @@ export function PageMenu({ here, tradeHref = "/trade", className = "" }: {
 }
 
 export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
-  const backend = useHasBackend();
   const cols: { title: string; links: { label: string; href: string; out?: boolean }[] }[] = [
     { title: "Product", links: [
       { label: "Markets", href: "/markets" },
@@ -225,8 +224,7 @@ export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
   return (
     /*
      * Two rows under a rule: the name and the year with the links across
-     * from them, then what this is in four sentences with the theme choice
-     * across from that. The wordmark set at 330px over a violet field was a
+     * from them, then the theme choice. The wordmark set at 330px over a violet field was a
      * poster stapled to the foot of every page.
      */
     <footer className="mt-auto border-t border-line safe-b">
@@ -245,16 +243,7 @@ export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
             ))}
           </nav>
         </div>
-        <div className="mt-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
-          <p className="max-w-[76ch] text-[14px] leading-[1.6] text-muted-foreground">
-            unwind clears perpetual markets on Solana by batch auction. It never holds your
-            assets: every order is a transaction you sign, settled on chain by the program.
-            Nothing here is investment advice. Leveraged trading carries risk, including the
-            loss of what you post.{" "}
-            {backend === true && "Devnet: test USDC, nothing here has value. "}
-            {backend === false && "Live prices, trading off. "}
-            Unaudited. Tokenised stocks (SPYx, NVDAx and the rest) are not available to US persons.
-          </p>
+        <div className="mt-7 flex justify-end">
           <ThemeChoice />
         </div>
       </Shell>
