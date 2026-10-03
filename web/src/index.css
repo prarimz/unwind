@@ -279,6 +279,9 @@
    */
   .pane-scroll {
     overflow-y: auto;
+    /* A pane scrolls one way. Anything wider than it is a layout fault to
+       fix, not a second scrollbar to show. */
+    overflow-x: hidden;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
@@ -338,7 +341,17 @@
   @media (pointer: coarse) {
     ::-webkit-scrollbar { width: 0; height: 0; }
   }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { background: var(--color-panel3); border-radius: 4px; }
+  /*
+   * Scrollbars are overlays: thin, invisible until the pointer is over the
+   * pane that scrolls, and never a white corner square where two meet. A
+   * gutter of grey bar drawn down every panel was the loudest line on a
+   * screen built out of hairlines.
+   */
+  * { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  *:hover { scrollbar-color: var(--color-panel3) transparent; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
+  *:hover::-webkit-scrollbar-thumb { background: var(--color-panel3); }
   ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-corner { background: transparent; }
 }

@@ -344,8 +344,13 @@ export default function App() {
         </div>
 
         <main className="flex min-h-0 flex-1 gap-[2px] px-[2px] pt-[2px]">
-          <MarketList markets={markets} current={market.symbol} onPick={setSymbol}
-            onPalette={() => setPaletteOpen(true)} />
+          {/* The list needs a column of its own. Under 1280px that column
+              comes out of the chart, so the list waits for a wider window
+              and the header's switcher and the palette do its job. */}
+          <div className="hidden xl:contents">
+            <MarketList markets={markets} current={market.symbol} onPick={setSymbol}
+              onPalette={() => setPaletteOpen(true)} />
+          </div>
 
           <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
             <div className="flex-none overflow-hidden rounded-[10px] bg-panel">
@@ -369,7 +374,7 @@ export default function App() {
 
           {/* The rail scrolls as one column; the ticket and the account keep
               their own heights inside it rather than being squeezed to fit. */}
-          <aside className="pane-scroll relative flex w-[320px] flex-none flex-col gap-[2px] xl:w-[340px]
+          <aside className="pane-scroll relative flex w-[300px] flex-none flex-col gap-[2px] xl:w-[340px]
                             [&>*]:flex-none">
             {ticket}
             {accountBox}
