@@ -155,7 +155,7 @@ export function ChartPanel({
       </div>
 
       {view === "chart" && (
-        <div className="strip-scroll flex flex-none items-center gap-1 pb-2">
+        <div className="flex flex-none flex-wrap items-center gap-x-1 gap-y-1 pb-2">
           {showTimeframes && <>
             {CHART_TFS.map((t) => (
               <Pill key={t.v} on={tf === t.v} onClick={() => setTf(t.v)}>{t.l}</Pill>
