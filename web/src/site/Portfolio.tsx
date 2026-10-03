@@ -170,7 +170,9 @@ export default function PortfolioPage() {
               {ready ? <AnimatedNumber value={total} duration={0.9} format={(n) => money(n)} /> : DASH}
             </div>
 
-            <div className="mt-5">
+            {/* Two columns of figures rather than eight rows: the hero is as
+                tall as this column, and eight rows left half of it empty. */}
+            <div className="mt-5 grid gap-x-8 sm:grid-cols-2 [&>*:nth-child(2)]:border-t-0">
               <Stat k="Position equity">{ready ? money(posEquity) : DASH}</Stat>
               <Stat k="Unrealized PnL">
                 {ready ? <span className={tone(account!.unrealized)}>{signed(account!.unrealized)}</span> : DASH}
