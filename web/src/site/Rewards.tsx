@@ -14,7 +14,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import "@/site/serif.css";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { DOCS, PILL_INDICATOR, PILL_LIST, PILL_TRIGGER, Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
+import { DOCS, OUTLINE, PageTop, SOLID, Seg, Shell, SiteFooter, SiteHeader, TAB, TAB_IND, Tiles } from "@/site/Chrome";
 import { WalletActions } from "@/components/WalletActions";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import { AnimatedNumber } from "@/components/motion/animated-number";
@@ -38,8 +38,7 @@ const TABS: [Tab, string][] = [
   ["rules", "How it works"],
 ];
 
-const BTN = "press h-[48px] rounded-full bg-foreground px-6 text-[14px] font-medium text-background " +
-  "transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-35";
+const BTN = SOLID;
 const LINK = "underline decoration-line underline-offset-4 transition-colors hover:text-foreground";
 const CAPS = "text-[11px] font-medium uppercase tracking-[.08em] text-muted-foreground";
 const DASH = <span className="font-normal text-dim">–</span>;
@@ -151,124 +150,48 @@ export default function RewardsPage() {
       <SiteHeader here="/rewards" actions={<WalletActions />} />
 
       <Shell className="pb-14 pt-4 sm:pt-8">
-        <div className="grid overflow-hidden rounded-[24px] border border-line bg-panel
-                        lg:grid-cols-[minmax(0,1fr)_440px]">
-          <section className="relative min-h-[320px] overflow-hidden">
-            {/* The front page's violet light and the glass mark, as /earn
-                carries its coins. Hidden on a phone. */}
-            <img src="/waitlist/field.webp" alt="" aria-hidden
-              className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover
-                         opacity-45 dark:block" />
-            <img src="/waitlist/logo-glass.webp" alt="" aria-hidden width={900} height={900}
-              draggable={false}
-              className="pointer-events-none absolute right-[-4%] top-1/2 hidden h-auto
-                         w-[min(46%,340px)] -translate-y-1/2 select-none sm:block
-                         [animation:spin_120s_linear_infinite] motion-reduce:[animation:none]" />
-            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r
-                                        from-panel via-panel/75 via-45% to-transparent to-70%" />
-
-            <div className="relative flex h-full flex-col justify-center px-5 py-9
-                            sm:max-w-[min(460px,60%)] sm:px-9">
-              <h1 className="font-serif-display text-[clamp(3rem,6vw,4.5rem)] leading-none
-                             tracking-[-.025em]">
-                Rewards
-              </h1>
-              <p className="mt-3.5 text-[15px] leading-[1.55] text-muted-foreground">
-                Points on every dollar you trade, back or deposit. USDC on every trader you
-                bring and every market you open.
-              </p>
-
-              <div className="mt-7">
-                {!self ? (
-                  <p className="text-[13px] text-muted-foreground">
-                    Viewing <span className="n font-medium text-foreground">{who(viewing!, r?.code)}</span>.
-                    Only its owner can claim.{" "}
-                    <a href="/rewards" className={LINK}>Yours</a>
-                  </p>
-                ) : !owner ? (
-                  <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly}
-                    className={BTN}>
-                    Connect wallet
-                  </button>
-                ) : link ? (
-                  <YourLink link={link} copied={copied} onCopy={copy} />
-                ) : (
-                  <ClaimCode busy={busy === "code"}
-                    onClaim={(code) => run("code", "referral-code", { code })} />
-                )}
-                {self && owner && r?.canSetReferrer !== false && !r?.referrer && arrived
-                  && arrived !== r?.code && (
-                  <p className="mt-4 text-[12.5px] leading-relaxed text-muted-foreground">
-                    Joined through <span className="font-medium text-foreground">{arrived}</span>.
-                    Your first order locks them in as your referrer and takes 10% off your fees.{" "}
-                    <button type="button" disabled={!!busy} className={`${LINK} disabled:opacity-35`}
-                      onClick={() => run("ref", "set-referrer", { code: arrived })}>
-                      {busy === "ref" ? "Confirming" : "Lock in now"}
-                    </button>
-                  </p>
-                )}
-                {r?.referrer && (
-                  <p className="mt-4 text-[12.5px] text-muted-foreground">
-                    Referred by{" "}
-                    <span className="font-medium text-foreground">
-                      {r.referrerCode ?? short(r.referrer)}
-                    </span>. 10% off every fee.
-                  </p>
-                )}
-                {note && <p className="mt-3 text-[12.5px] text-down">{note}</p>}
-              </div>
-            </div>
-          </section>
-
-          <aside className="flex min-w-0 flex-col border-t border-line bg-panel2 px-5 py-7
-                            sm:px-9 sm:py-9 lg:border-l lg:border-t-0">
-            <div className={CAPS}>Points</div>
-            <div className="n mt-2 text-[40px] font-semibold leading-none tracking-[-.02em]">
-              {/* Two places while it is earning by the second, or the ticking
-                  would be invisible. */}
-              {r ? <AnimatedNumber value={live} duration={0.9}
-                format={rate > 0 ? (n) => n.toLocaleString(undefined,
-                  { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : points} /> : DASH}
-            </div>
-
-            <div className="mt-5">
-              <Stat k="Rank">
-                {all?.me ? <>#{all.me.rank} <span className="font-normal text-muted-foreground">
-                  of {all.wallets.toLocaleString()}</span></> : DASH}
-              </Stat>
-              {rate > 0 && <Stat k="Earning">+{points(rate)} a day</Stat>}
-              <Stat k="Trading">{r ? points(r.breakdown.trading) : DASH}</Stat>
-              <Stat k="Referrals">{r ? points(r.breakdown.referrals) : DASH}</Stat>
-              <Stat k="Markets">{r ? points(r.breakdown.listing) : DASH}</Stat>
-              <Stat k="Backing and pool">{r ? points(r.breakdown.stakes) : DASH}</Stat>
-              <Stat k="Fees saved">{r ? money(r.feesSaved) : DASH}</Stat>
-              <Stat k="USDC to claim">
-                {r ? <AnimatedNumber value={r.claimable} duration={0.9} format={(n) => money(n)} /> : DASH}
-              </Stat>
-            </div>
-
-            <div className="mt-auto pt-6">
-              <button type="button" disabled={!self || !owner || !r || r.claimable <= 0 || !!busy}
-                onClick={() => run("claim", "claim-rewards")} className={`${BTN} w-full`}>
-                {busy === "claim" ? "Claiming" : "Claim"}
+        <PageTop title="Rewards"
+          lede="Points on every dollar you trade, back or deposit. USDC on every trader you bring and every market you open."
+          actions={!self ? (
+            <p className="text-[13px] text-muted-foreground">
+              Viewing <span className="n font-medium text-foreground">{who(viewing!, r?.code)}</span>.
+              Only its owner can claim. <a href="/rewards" className={LINK}>Yours</a>
+            </p>
+          ) : !owner ? (
+            <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly} className={SOLID}>
+              Connect wallet
+            </button>
+          ) : (
+            <>
+              <button type="button" disabled={!r || r.claimable <= 0 || !!busy}
+                onClick={() => run("claim", "claim-rewards")} className={SOLID}>
+                {busy === "claim" ? "Claiming" : r && r.claimable > 0 ? `Claim ${money(r.claimable)}` : "Claim"}
               </button>
               {r?.exists && (
-                <p className="mt-2.5 text-center text-[12px] text-muted-foreground">
-                  {r.claimed > 0 && <>{money(r.claimed)} claimed. </>}
-                  <a href={explorer(r.account)} target="_blank" rel="noreferrer" className={LINK}>
-                    Verify on Solscan
-                  </a>
-                </p>
+                <a href={explorer(r.account)} target="_blank" rel="noreferrer" className={OUTLINE}>Solscan</a>
               )}
-            </div>
-          </aside>
-        </div>
+            </>
+          )} />
+        {note && <p className="mt-3 text-[12.5px] text-down">{note}</p>}
 
-        <div className="mt-8">
-          <Tabs value={tab} onValueChange={(t) => go(t as Tab)} variant="pill" className="min-w-0 max-w-full">
-            <TabsList className={PILL_LIST}>
+        <Tiles items={[
+          { k: "Points", v: r ? <AnimatedNumber value={live} duration={0.9}
+              format={rate > 0 ? (n) => n.toLocaleString(undefined,
+                { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : points} /> : DASH,
+            sub: rate > 0 ? `+${points(rate)} a day` : r ? `${points(r.breakdown.trading)} from trading` : "" },
+          { k: "Rank", v: all?.me ? `#${all.me.rank}` : DASH,
+            sub: all?.me ? `of ${all.wallets.toLocaleString()} wallets` : "" },
+          { k: "Fees saved", v: r ? money(r.feesSaved) : DASH,
+            sub: r?.referrer ? `Referred by ${r.referrerCode ?? short(r.referrer)}` : "" },
+          { k: "USDC to claim", v: r ? <AnimatedNumber value={r.claimable} duration={0.9} format={(n) => money(n)} /> : DASH,
+            sub: r && r.claimed > 0 ? `${money(r.claimed)} claimed` : "Referrals and markets" },
+        ]} />
+
+        <div className="mt-6 border-b border-line">
+          <Tabs value={tab} onValueChange={(t) => go(t as Tab)} variant="underline" className="min-w-0 max-w-full">
+            <TabsList className="-mb-px gap-0 border-0">
               {TABS.map(([k, label]) => (
-                <TabsTrigger key={k} value={k} className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
+                <TabsTrigger key={k} value={k} className={TAB} indicatorClassName={TAB_IND}>
                   {label}
                 </TabsTrigger>
               ))}
@@ -278,6 +201,23 @@ export default function RewardsPage() {
 
         {tab === "leaderboard" && <Board all={all} week={week} owner={owner} self={self} who={who} />}
 
+        {tab === "referrals" && self && owner && (
+          <section className="mt-4 overflow-hidden rounded-[16px] border border-line bg-panel px-5 py-5 sm:px-7">
+            {link
+              ? <YourLink link={link} copied={copied} onCopy={copy} />
+              : <ClaimCode busy={busy === "code"} onClaim={(code) => run("code", "referral-code", { code })} />}
+            {r?.canSetReferrer !== false && !r?.referrer && arrived && arrived !== r?.code && (
+              <p className="mt-4 text-[12.5px] leading-relaxed text-muted-foreground">
+                Joined through <span className="font-medium text-foreground">{arrived}</span>.
+                Your first order locks them in as your referrer and takes 10% off your fees.{" "}
+                <button type="button" disabled={!!busy} className={`${LINK} disabled:opacity-35`}
+                  onClick={() => run("ref", "set-referrer", { code: arrived })}>
+                  {busy === "ref" ? "Confirming" : "Lock in now"}
+                </button>
+              </p>
+            )}
+          </section>
+        )}
         {tab === "referrals" && (
           owner && r ? (
             <>
@@ -290,7 +230,7 @@ export default function RewardsPage() {
         )}
 
         {tab === "rules" && (
-          <div className="mt-4 grid overflow-hidden rounded-[24px] border border-line bg-panel
+          <div className="mt-4 grid overflow-hidden rounded-[16px] border border-line bg-panel
                           lg:grid-cols-[minmax(0,1fr)_440px]">
             {/* Bulk's numbered facts: a label, the figure, one line. */}
             <ol>
@@ -343,7 +283,7 @@ const Stat = ({ k, children }: { k: string; children: ReactNode }) => (
 
 function Card({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section className="mt-4 overflow-hidden rounded-[24px] border border-line bg-panel">
+    <section className="mt-4 overflow-hidden rounded-[16px] border border-line bg-panel">
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-4 pt-6 sm:px-7">
         <h2 className="text-[16px] font-medium">{title}</h2>
         {aside}
@@ -389,16 +329,7 @@ function Board({ all, week, owner, self, who }: {
 
   return (
     <Card title="Leaderboard" aside={
-      <Tabs value={period} onValueChange={(p) => setPeriod(p as "all" | "week")} variant="pill"
-        className="min-w-0 max-w-full">
-        <TabsList className={PILL_LIST}>
-          {([["all", "All time"], ["week", "This week"]] as const).map(([k, label]) => (
-            <TabsTrigger key={k} value={k} className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <Seg options={[["all", "All time"], ["week", "This week"]]} value={period} onChange={setPeriod} />
     }>
       <Head cols={BOARD}>
         <span>#</span><span>Wallet</span>
