@@ -31,7 +31,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronRight, X } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { OUTLINE, PageTop, SOLID, Shell, SiteFooter, SiteHeader, TAB, TAB_IND, Tiles } from "@/site/Chrome";
+import { PILL_INDICATOR, PILL_LIST, PILL_TRIGGER, Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import { Mark } from "@/components/Brand";
 import { TickerLogo } from "@/components/TickerLogo";
 import { WalletActions } from "@/components/WalletActions";
@@ -237,13 +237,13 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
             </button>
           </header>
 
-          <Tabs value={side} variant="underline" className="mt-5"
+          <Tabs value={side} variant="pill" className="mt-5"
             onValueChange={(k) => {
               setSide(k as "in" | "out"); setAmount(""); setAll(false); setNote(null); setPayWith("USDC");
             }}>
-            <TabsList className="gap-0 border-0">
+            <TabsList className={PILL_LIST}>
               {(["in", "out"] as const).map((k) => (
-                <TabsTrigger key={k} value={k} className={TAB} indicatorClassName={TAB_IND}>
+                <TabsTrigger key={k} value={k} className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
                   {k === "in" ? (v.kind === "pool" ? "Deposit" : "Back") : "Withdraw"}
                 </TabsTrigger>
               ))}
@@ -426,38 +426,132 @@ export default function Earn() {
       <SiteHeader here="/earn" actions={<WalletActions />} />
 
       <Shell className="pb-14 pt-4 sm:pt-8">
-        <PageTop title="Earn"
-          lede="Back a market you believe in with SOL, USDC or USDT, or hold the pool behind every market."
-          actions={!owner ? (
-            <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly} className={SOLID}>
-              Connect wallet
-            </button>
-          ) : (
-            <>
-              <button type="button" onClick={toMarkets} className={SOLID}>Back a market</button>
-              <button type="button" onClick={() => setOpen({ id: "pool", start: "in" })} disabled={!pool}
-                className={OUTLINE}>Deposit to pool</button>
-              <button type="button" onClick={() => setOpen({ id: "pool", start: "out" })} disabled={!pool}
-                className={OUTLINE}>Withdraw</button>
-            </>
-          )} />
+        <div className="grid overflow-hidden rounded-[24px] border border-line bg-panel
+                        lg:grid-cols-[minmax(0,1fr)_440px]">
+          {/*
+           * The hero: the page's claim on the left and, on the right, the
+           * three coins that claim names, SOL, USDC and USDT on the pedestal a
+           * vault is.
+           *
+           * The render is on its own transparent ground, so the card shows
+           * through it in either theme. It is sized by the column's width, not
+           * its height, because the column narrows a long way before it gets
+           * any shorter. Hidden on a phone, where the copy takes the full
+           * width and there is no side to put it on.
+           */}
+          <section className="relative min-h-[300px] overflow-hidden">
+            {/* The front page's violet light, faint, under the render (dark mode only). */}
+            <img src="/waitlist/field.webp" alt="" aria-hidden
+              className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover
+                         opacity-45 dark:block" />
+            {/* Two renders: the dark one's glow reads as haze on white. Both are the
+                blue originals with the stand and glow shifted to the brand violet
+                (the *-violet files); the three coins keep their own colours. */}
+            <img src="/earn/hero-violet.webp" alt="" aria-hidden width={900} height={900}
+              draggable={false}
+              className="pointer-events-none absolute right-2 top-1/2 hidden h-auto
+                         w-[min(46%,320px)] -translate-y-1/2 select-none sm:block
+                         dark:!hidden" />
+            <img src="/earn/hero-dark-violet.webp" alt="" aria-hidden width={900} height={900}
+              draggable={false}
+              className="pointer-events-none absolute right-2 top-1/2 hidden h-auto
+                         w-[min(46%,320px)] -translate-y-1/2 select-none
+                         dark:sm:block" />
+            {/* Keeps the copy legible where the render's glow reaches under
+                it, and stops short of the coins themselves. */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r
+                                        from-panel via-panel/70 via-40% to-transparent to-58%" />
+            <div className="relative flex h-full flex-col justify-center px-5 py-9
+                            sm:max-w-[min(460px,58%)] sm:px-9">
+              <h1 className="font-serif-display text-[clamp(3rem,6vw,4.5rem)] leading-none
+                             tracking-[-.025em]">
+                Earn
+              </h1>
+              <p className="mt-3.5 text-[15px] leading-[1.55] text-muted-foreground">
+                Back a market you believe in with{" "}
+                <span className="whitespace-nowrap">
+                  <PayToken k="SOL" size={17} className="font-medium text-foreground" />,
+                </span>{" "}
+                <PayToken k="USDC" size={17} className="font-medium text-foreground" /> or{" "}
+                <PayToken k="USDT" size={17} className="font-medium text-foreground" />.
+              </p>
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <button type="button" onClick={toMarkets}
+                  className="press h-[48px] rounded-full bg-foreground px-6 text-[14px]
+                             font-medium text-background transition-opacity hover:opacity-90">
+                  Back a market
+                </button>
+                <button type="button" onClick={() => setOpen({ id: "pool", start: "in" })}
+                  disabled={!pool}
+                  className="text-[13.5px] text-muted-foreground underline decoration-line
+                             underline-offset-4 transition-colors hover:text-foreground
+                             hover:decoration-foreground/40 disabled:opacity-35">
+                  or join the pool
+                </button>
+              </div>
+            </div>
+          </section>
 
-        <Tiles items={[
-          { k: "Deposited", v: <AnimatedNumber value={deposited} duration={0.9} format={(n) => money(n, 0)} />,
-            sub: `${shown.length} vaults` },
-          { k: "Pool APY", tone: poolApy.tone,
-            v: poolApy.value != null
-              ? <AnimatedNumber value={poolApy.value} duration={0.9}
-                  format={(n) => `${n < 0 ? "-" : ""}${Math.abs(n).toFixed(2)}%`} />
-              : poolApy.text,
-            sub: poolApy.text !== "–" ? poolApy.note : "" },
-          { k: "In your wallet",
-            v: owner ? <AnimatedNumber value={account?.usdc ?? 0} duration={0.9}
-                format={(n) => n.toLocaleString(undefined, { maximumFractionDigits: 2 })} /> : "–",
-            sub: owner ? "USDC" : "Not connected" },
-          { k: "Your deposits", v: owner ? <AnimatedNumber value={yours} duration={0.9} format={(n) => money(n)} /> : "–",
-            sub: owner ? "Pool and backing" : "" },
-        ]} />
+          {/* What the visitor holds, beside the way in. */}
+          <aside className="flex min-w-0 flex-col border-t border-line bg-panel2 px-5 py-7
+                            sm:px-9 sm:py-9 lg:border-l lg:border-t-0">
+            <h2 className="text-[16px] font-medium">The pool</h2>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">
+              One deposit across every market.
+            </p>
+
+            <div className="mt-4">
+              <Stat k="In your wallet">
+                {owner ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <AnimatedNumber value={account?.usdc ?? 0} duration={0.9}
+                      format={(n) => n.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
+                    <PayToken k="USDC" size={15} />
+                  </span>
+                ) : <span className="font-normal text-muted-foreground">not connected</span>}
+              </Stat>
+              <Stat k={`Pool APY${poolApy.text !== "–" ? `, ${poolApy.note}` : ""}`} tone={poolApy.tone}>
+                {poolApy.value != null
+                  ? <AnimatedNumber value={poolApy.value} duration={0.9}
+                      format={(n) => `${n < 0 ? "-" : ""}${Math.abs(n).toFixed(2)}%`} />
+                  : poolApy.text}
+              </Stat>
+              <Stat k="Deposited">
+                {owner ? <AnimatedNumber value={yours} duration={0.9} format={(n) => money(n)} /> : <span className="font-normal text-dim">–</span>}
+              </Stat>
+            </div>
+
+            {/* Without a wallet there is nothing to deposit from, and a greyed
+                Deposit says "unavailable" when the truth is "connect first". */}
+            {!owner ? (
+              <div className="mt-auto pt-6">
+                <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly}
+                  className="press h-[48px] w-full rounded-full bg-foreground text-[14px] font-medium
+                             text-background transition-opacity hover:opacity-90
+                             disabled:pointer-events-none disabled:opacity-35">
+                  Connect wallet
+                </button>
+              </div>
+            ) : (
+            <div className="mt-auto grid grid-cols-2 gap-2.5 pt-6">
+              <button type="button" onClick={() => setOpen({ id: "pool", start: "in" })}
+                disabled={!pool}
+                className="press h-[48px] rounded-full bg-foreground text-[14px] font-medium
+                           text-background transition-opacity hover:opacity-90
+                           disabled:pointer-events-none disabled:opacity-35">
+                Deposit
+              </button>
+              <button type="button" onClick={() => setOpen({ id: "pool", start: "out" })}
+                disabled={!pool}
+                className="press h-[48px] rounded-full border border-line text-[14px] font-medium
+                           transition-colors hover:border-foreground/40
+                           disabled:pointer-events-none disabled:opacity-35">
+                Withdraw
+              </button>
+            </div>
+            )}
+          </aside>
+        </div>
 
         {/* ---------------------------------------------- where yours is */}
         <YourBacking backings={backings} markets={markets}
@@ -466,10 +560,10 @@ export default function Earn() {
 
         {/* ------------------------------------------------ the vaults */}
         <section ref={table}
-          className="mt-5 scroll-mt-24 overflow-hidden rounded-[16px] border border-line bg-panel">
-          <div className="flex flex-wrap items-center justify-between gap-4 px-5 pb-3 pt-5 sm:px-6">
+          className="mt-5 scroll-mt-24 overflow-hidden rounded-[24px] border border-line bg-panel">
+          <div className="flex flex-wrap items-center justify-between gap-4 px-5 pb-5 pt-7 sm:px-9">
             <div>
-              <h2 className="text-[17px] font-semibold tracking-[-.01em]">
+              <h2 className="text-[clamp(1.375rem,2.2vw,1.625rem)] font-medium tracking-[-.02em]">
                 Back a market
                 <span className="n ml-2 text-[14px] font-normal text-dim">{shown.length}</span>
               </h2>
@@ -477,12 +571,12 @@ export default function Earn() {
                 <AnimatedNumber value={deposited} duration={0.9} format={(n) => money(n, 0)} /> deposited
               </p>
             </div>
-            <Tabs value={filter} onValueChange={(f) => setFilter(f as Filter)} variant="underline"
+            <Tabs value={filter} onValueChange={(f) => setFilter(f as Filter)} variant="pill"
               className="min-w-0 max-w-full">
-              <TabsList className="gap-0 border-0">
+              <TabsList className={PILL_LIST}>
                 {FILTERS.map((f) => (
-                  <TabsTrigger key={f.key} value={f.key} className={TAB}
-                    indicatorClassName={TAB_IND}>
+                  <TabsTrigger key={f.key} value={f.key} className={PILL_TRIGGER}
+                    indicatorClassName={PILL_INDICATOR}>
                     {f.label}
                   </TabsTrigger>
                 ))}

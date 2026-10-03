@@ -222,100 +222,58 @@ export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
   ];
   return (
     /*
-     * One line under the page: the name, the disclaimer, the links. The
-     * wordmark set at 330px over a violet field was a poster stapled to the
-     * foot of every page.
+     * A panel in the brand's own light, like the front page: the glass logo
+     * and the line, the links in three labelled columns, then the name set
+     * big in the serif across the foot, cropped by the panel's edge.
      */
-    <footer className="mt-auto border-t border-line safe-b">
-      <Shell className="flex flex-col gap-4 py-7 text-[13px] text-muted-foreground
-                        sm:flex-row sm:items-center sm:justify-between">
-        <p className="flex min-w-0 items-center gap-2.5">
-          <img src="/waitlist/logo-glass-mark.webp" alt="" className="h-5 w-5 flex-none" />
-          <span className="font-medium text-foreground">unwind</span>
-          <span>
-            Unaudited.{" "}
-            {backend === true && "Devnet, test USDC. "}
-            {backend === false && "Live prices, trading off. "}
-            Not investment advice.
-          </span>
-        </p>
-        <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer">
-          {cols.flatMap((c) => c.links).map((l) => (
-            <a key={l.label} href={l.href} {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
-              className="transition-colors hover:text-foreground">
-              {l.label}
-            </a>
-          ))}
-        </nav>
-      </Shell>
-    </footer>
-  );
-}
-
-/*
- * The top of a page: its name and its actions on one line, one line of
- * copy under the name. No hero, no render: the page starts on its figures.
- */
-export function PageTop({ title, lede, actions }: {
-  title: string; lede?: ReactNode; actions?: ReactNode;
-}) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-      <div className="min-w-0">
-        <h1 className="text-[28px] font-semibold leading-none tracking-[-.02em]">{title}</h1>
-        {lede && <p className="mt-2.5 max-w-[62ch] text-[14px] leading-[1.55] text-muted-foreground">{lede}</p>}
-      </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </div>
-  );
-}
-
-/// A row of figures in one bordered strip, hairlines between them.
-export function Tiles({ items, cols = 4 }: {
-  items: { k: ReactNode; v: ReactNode; sub?: ReactNode; tone?: string; action?: ReactNode }[];
-  cols?: 3 | 4;
-}) {
-  return (
-    <div className={`mt-6 grid gap-px overflow-hidden rounded-[16px] border border-line bg-line
-                     sm:grid-cols-2 ${cols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
-      {items.map((x, i) => (
-        <div key={i} className="flex items-start justify-between gap-3 bg-panel px-5 py-4">
-          <div className="min-w-0">
-            <div className={CAPS}>{x.k}</div>
-            <div className={`n mt-2 truncate text-[24px] font-semibold leading-none tracking-[-.02em] ${x.tone ?? ""}`}>
-              {x.v}
-            </div>
-            <div className="n mt-2 min-h-[16px] truncate text-[12px] text-muted-foreground">{x.sub}</div>
+    /* The navbar's treatment, mirrored: full bleed and flush with the bottom
+       of the window, rounded only on the corners that face the page. */
+    <footer className="safe-b">
+      <div className="relative overflow-hidden rounded-t-[10px] border-t border-line bg-panel">
+        <img src="/waitlist/field.webp" alt="" aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] w-full object-cover opacity-55
+                     [mask-image:linear-gradient(to_top,black_35%,transparent)]" />
+        <div className="relative grid gap-10 px-6 pt-12 sm:px-10 md:grid-cols-[1.2fr_2fr] md:pt-16">
+          <div>
+            <img src="/waitlist/logo-glass-mark.webp" alt="" className="h-11 w-11" />
+            <p className="mt-5 max-w-[34ch] text-[15px] leading-relaxed text-foreground/85">
+              Every market clears by auction. Anyone can open one.
+            </p>
           </div>
-          {x.action && <div className="flex-none pt-0.5">{x.action}</div>}
+          <nav className="grid grid-cols-2 gap-8 sm:grid-cols-3" aria-label="Footer">
+            {cols.map((c) => (
+              <div key={c.title}>
+                <p className="text-[11px] font-medium uppercase tracking-[.14em] text-foreground/55">{c.title}</p>
+                <ul className="mt-4 flex flex-col gap-2.5">
+                  {c.links.map((l) => (
+                    <li key={l.label}>
+                      <a href={l.href} {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
+                        className="text-[14px] text-muted-foreground transition-colors hover:text-foreground">
+                        {l.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
-      ))}
-    </div>
-  );
-}
 
-/// A small caps label over a figure or a column.
-export const CAPS = "text-[11px] font-medium uppercase tracking-[.08em] text-muted-foreground";
+        <p className="relative mt-12 max-w-[70ch] px-6 text-[11.5px] leading-relaxed text-foreground/55 sm:px-10">
+          Unaudited.{" "}
+          {backend === true && "Devnet, test USDC. "}
+          {backend === false && "Live prices, trading off. "}
+          Not investment advice.
+        </p>
 
-/// Tabs as words on a rule: the trigger and indicator classes for beUI's
-/// underline variant, so every page's tab row is the same row.
-export const TAB = "min-h-[42px] px-3 text-[14px] font-medium first:pl-0";
-export const TAB_IND = "bg-foreground";
-
-/// A small choice between a few words: a period, a side.
-export function Seg<T extends string>({ options, value, onChange }: {
-  options: [T, string][]; value: T; onChange: (v: T) => void;
-}) {
-  return (
-    <div className="flex items-center gap-0.5 rounded-[8px] border border-line p-0.5 text-[12.5px]">
-      {options.map(([k, label]) => (
-        <button key={k} type="button" onClick={() => onChange(k)} aria-pressed={value === k}
-          className={`rounded-[6px] px-2.5 py-1 transition-colors ${value === k
-            ? "bg-panel3 font-medium text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-          {label}
-        </button>
-      ))}
-    </div>
+        {/* The name across the foot, cropped by the panel so it reads as a mark, not a line. */}
+        <div aria-hidden className="font-serif-display relative -mb-[.1em] mt-4 select-none px-4
+                                    leading-[.85] tracking-[-.035em] text-[#e2d9ff] sm:px-8"
+          style={{ fontSize: "clamp(96px, 22vw, 330px)" }}>
+          unwind
+        </div>
+      </div>
+    </footer>
   );
 }
 

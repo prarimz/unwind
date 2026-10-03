@@ -24,7 +24,7 @@ import {
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import {
-  DOCS, Shell, SiteFooter, SiteHeader, TAB, TAB_IND,
+  DOCS, PILL_INDICATOR, PILL_LIST, PILL_TRIGGER, Shell, SiteFooter, SiteHeader,
 } from "@/site/Chrome";
 import { PayToken } from "@/components/PayToken";
 import { Mark } from "@/components/Brand";
@@ -453,21 +453,28 @@ export default function List() {
     <div className="site relative min-h-full">
       <SiteHeader here="/list" actions={<WalletActions />} />
 
+      {/* The front page's violet light across the top of the page, fading out
+          before the card's fields, so the page opens the way the front page does. */}
+      <img src="/waitlist/field.webp" alt="" aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-[76px] hidden h-[420px] w-full
+                   object-cover opacity-60 [mask-image:linear-gradient(to_bottom,black,transparent)]
+                   dark:block" />
       <Shell className="relative pb-28 pt-4 sm:pt-8 lg:pb-14">
-        <div className="grid overflow-hidden rounded-[16px] border border-line bg-panel
+        <div className="grid overflow-hidden rounded-[24px] border border-line bg-panel
                         lg:grid-cols-[minmax(0,1fr)_440px]">
           {/* ------------------------------------------------------ form */}
           <div className="min-w-0 px-5 py-7 sm:px-9 sm:py-9">
             <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
-              <h1 className="text-[24px] font-semibold leading-none tracking-[-.02em]">
+              <h1 className="font-serif-display text-[clamp(2rem,3.4vw,2.6rem)] leading-none
+                             tracking-[-.02em]">
                 {tab === "list" ? "List a market" : "Back a market"}
               </h1>
-              <Tabs value={tab} onValueChange={(v) => setTab(v as "list" | "back")} variant="underline">
-                <TabsList className="gap-0 border-0">
-                  <TabsTrigger value="list" className={TAB} indicatorClassName={TAB_IND}>
+              <Tabs value={tab} onValueChange={(v) => setTab(v as "list" | "back")} variant="pill">
+                <TabsList className={PILL_LIST}>
+                  <TabsTrigger value="list" className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
                     List
                   </TabsTrigger>
-                  <TabsTrigger value="back" className={TAB} indicatorClassName={TAB_IND}>
+                  <TabsTrigger value="back" className={PILL_TRIGGER} indicatorClassName={PILL_INDICATOR}>
                     Back{listed.length > 0 && <span className="n ml-1.5 opacity-60">{listed.length}</span>}
                   </TabsTrigger>
                 </TabsList>

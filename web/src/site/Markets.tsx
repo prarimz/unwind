@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "@/site/serif.css";
 import { ChevronUp, Search, Star as LucideStar } from "lucide-react";
-import { OUTLINE, PageTop, Shell, SiteFooter, SiteHeader, TAB, TAB_IND } from "@/site/Chrome";
+import { PILL_INDICATOR, Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import { WalletActions } from "@/components/WalletActions";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import { TrendBadge } from "@/components/ui/trend-badge";
@@ -253,40 +253,120 @@ export default function Markets() {
       <SiteHeader here="/markets" actions={<WalletActions />} />
 
 
-      <Shell className="pb-14 pt-8">
-        <PageTop title="Markets" lede="Every market clears by auction. Anyone can open one."
-          actions={<>
-            <label className="flex h-11 w-[260px] items-center gap-2.5 rounded-full border border-line bg-panel
-                              px-4 text-[14px] text-muted-foreground focus-within:border-foreground/40">
-              <Search size={16} strokeWidth={2} aria-hidden className="flex-none" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search markets" aria-label="Search markets"
-                className="min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground" />
-            </label>
-            <a href="/list" className={OUTLINE}>Open a market</a>
-          </>} />
+      {/*
+       * The search is the hero, because on a venue whose list is unbounded the
+       * useful first move is to say what you are after. The line behind it is
+       * scenery, and is marked as such.
+       */}
+      <div className="relative overflow-hidden border-b border-line">
+        {/* The front page's violet light (waitlist/field.webp) behind the search,
+            fading into the page at the foot so the table below starts clean. */}
+        <img src="/waitlist/field.webp" alt="" aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-45
+                     [mask-image:linear-gradient(to_bottom,black_45%,transparent)] dark:opacity-70" />
+        <Shell className="relative py-12 text-center sm:py-16 md:py-24">
+          {/* The two things this page does, in the order it offers them: the
+              field below, and the link beside the table under it. The second
+              sentence is the whole claim -- the listing is not ours to grant
+              -- put as something you can go and do rather than argued. */}
+          <h1 className="font-serif-display mx-auto max-w-[13ch] text-[clamp(2.6rem,10vw,3.4rem)]
+                         leading-[1] tracking-[-.025em] md:text-[80px]">
+            Find a market. Or open one.
+          </h1>
+          {/*
+           * The road is a decoration of this row, not of the section, so it
+           * is mounted here: its lane sits at the middle of its own box and
+           * that box is centred on the field, which is what makes the two
+           * line up without either knowing the other's measurements.
+           */}
+          <div className="relative mx-auto mt-9 max-w-[610px] md:mt-11">
+            <Track markets={markets} />
+            <span className="pointer-events-none absolute left-[18px] top-1/2 z-20
+                             -translate-y-1/2 text-muted-foreground sm:left-[22px]">
+              <Find />
+            </span>
+            <input value={query} onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search markets" aria-label="Search markets"
+              className="relative z-10 h-[56px] w-full rounded-full border border-line
+                         bg-panel pl-[46px] pr-5 text-[15px] transition-colors
+                         placeholder:text-muted-foreground focus:border-foreground/40
+                         focus:outline-none sm:h-[62px] sm:pl-[52px] sm:pr-6" />
+          </div>
+        </Shell>
+      </div>
+
+      {/*
+       * The list sits on a panel, inset from the window; the hero above it
+       * does not. That is the split in the reference and it is the right one:
+       * the hero is the page's backdrop and runs to the edges, while the
+       * cards and the table are a surface laid on top of it, with the panel's
+       * own edge telling you where that surface begins.
+       */}
+      <div className="mx-auto w-full max-w-[1460px] px-2.5 pb-12 sm:px-4">
+        <div className="rounded-[18px] border border-line bg-background">
+      <Shell className="py-8 md:py-10">
         {/*
          * The groups, as cards fronted by a market from inside them. A group
          * nobody can enter is not shown at all: this list grows by listings
          * nobody approves, so which groups have anything in them is not
          * knowable when the page is written.
          */}
-        {/* The groups as words on a rule, each with how many it holds. A
-            group nobody can enter is not shown: this list grows by listings
-            nobody approves. */}
-        <div className="mt-7 border-b border-line">
-          <Tabs value={query ? "" : group} onValueChange={(g) => { setGroup(g); setQuery(""); }}
-            variant="underline" className="min-w-0 max-w-full">
-            <TabsList className="-mb-px gap-0 border-0">
-              {GROUPS.filter((g) => ["all", "memes", "watchlist"].includes(g.key) || counts[g.key] > 0)
-                .map((g) => (
-                  <TabsTrigger key={g.key} value={g.key} className={TAB} indicatorClassName={TAB_IND}>
+        <div className="strip-scroll -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0">
+          {GROUPS.filter((g) => ["all", "memes", "watchlist"].includes(g.key)
+            || counts[g.key] > 0)
+            .map((g) => {
+              const on = g.key === group && !query;
+              const empty = counts[g.key] === 0;
+              const art = g.art;
+              const face = empty ? undefined : g.face?.(markets, saved);
+              return (
+                <button key={g.key} type="button" disabled={empty && g.key !== "all"}
+                  onClick={() => { setGroup(g.key); setQuery(""); }} aria-pressed={on}
+                  className={`press relative h-[112px] w-[204px] flex-none overflow-hidden
+                              rounded-[14px] border text-left transition-colors ${
+                    empty && g.key !== "all" ? "cursor-default opacity-45" : ""} ${on
+                      ? "border-brand/55 bg-brand/[.09]"
+                      : "border-line bg-panel hover:bg-panel2"}`}>
+                  {/* Artwork bleeds off the top-right and is clipped by the
+                      card, which is what stops it reading as an icon. */}
+                  {/*
+                   * A drawing if the group has one, and its count if not.
+                   *
+                   * The number is not a placeholder standing in for art. It
+                   * is the one thing on the card that could not appear on
+                   * anybody else's: what this group holds right now, which
+                   * changes when somebody opens a market. Tabular figures, so
+                   * the row does not jostle as the counts move.
+                   */}
+                  {/*
+                   * Every card wears a logo, cut by the corner.
+                   *
+                   * The order is: a mark the group names, else a market from
+                   * inside it, else this venue's own. A group that is empty
+                   * still gets one -- a card that falls back to a bare number
+                   * while its neighbours carry artwork reads as the one that
+                   * failed to load, and an empty group is the case where the
+                   * card most needs to look like somewhere worth pressing.
+                   */}
+                  <span aria-hidden
+                    className="pointer-events-none absolute -right-7 -top-7 overflow-hidden
+                               rounded-[22px]">
+                    {art ? (
+                      <img src={art} alt="" width={120} height={120}
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                        className="block" />
+                    ) : face ? (
+                      <TickerLogo m={face} size={120} />
+                    ) : (
+                      <Mark size={120} />
+                    )}
+                  </span>
+                  <span className="absolute bottom-3.5 left-4 text-[15px] font-medium">
                     {g.label}
-                    <span className="n ml-1.5 text-[12px] font-normal text-dim">{counts[g.key]}</span>
-                  </TabsTrigger>
-                ))}
-            </TabsList>
-          </Tabs>
+                  </span>
+                </button>
+              );
+            })}
         </div>
 
         {/*
@@ -294,7 +374,7 @@ export default function Markets() {
          * header, because the columns it offers are dropped on a phone and
          * sorting by something you cannot see is still worth having.
          */}
-        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+        <div className="mt-7 flex flex-wrap items-center gap-2.5">
           {/*
            * The source control opens sideways, into the row it lives in.
            *
@@ -308,8 +388,8 @@ export default function Markets() {
             className={`press flex flex-none items-center gap-2 rounded-full border px-4 py-2
                         text-[12.5px] font-medium transition-colors ${
               source === "all"
-                ? "border-line bg-panel text-foreground hover:bg-panel2"
-                : "border-foreground/40 bg-panel2 text-foreground"}`}>
+                ? "border-line bg-panel text-foreground hover:border-line/80"
+                : "border-brand/50 bg-brand/[.08] text-foreground"}`}>
             {SOURCES.find((x) => x.key === source)?.label}
             <Caret up={sourcesOpen} />
           </button>
@@ -349,12 +429,12 @@ export default function Markets() {
            * each. Controlled, because the header's own column buttons set the
            * same state and the two have to agree.
            */}
-          <Tabs value={sort} onValueChange={(v) => hit(v as SortKey)} variant="underline"
+          <Tabs value={sort} onValueChange={(v) => hit(v as SortKey)} variant="pill"
             className="min-w-0 max-w-full">
-            <TabsList className="gap-0 border-0">
+            <TabsList>
               {COLUMNS.map((c) => (
-                <TabsTrigger key={c.key} value={c.key} indicatorClassName={TAB_IND}
-                  className="min-h-[36px] px-3 text-[13px] font-medium">
+                <TabsTrigger key={c.key} value={c.key} indicatorClassName={PILL_INDICATOR}
+                  className="[&_[data-tabs-label]]:text-background">
                   {c.label}
                   {sort === c.key && <> <Caret up={!desc} /></>}
                 </TabsTrigger>
@@ -367,10 +447,10 @@ export default function Markets() {
             className={`press ml-auto flex flex-none items-center gap-2 rounded-full border
                         px-4 py-2 text-[12.5px] font-medium transition-colors ${
               filtersOn > 0
-                ? "border-foreground/40 bg-panel2 text-foreground"
+                ? "border-brand/50 bg-brand/[.08] text-foreground"
                 : "border-line bg-panel text-muted-foreground hover:text-foreground"}`}>
             Filters
-            {filtersOn > 0 && <span className="n text-muted-foreground">{filtersOn}</span>}
+            {filtersOn > 0 && <span className="n text-brand">{filtersOn}</span>}
             <Caret up={filtersOpen} />
           </button>
         </div>
@@ -409,7 +489,7 @@ export default function Markets() {
          * between them. Everything past the first two numbers is dropped on a
          * phone rather than crushed: five figures at 375 is a wall.
          */}
-        <div className="mt-3.5 overflow-hidden rounded-[16px] border border-line bg-panel">
+        <div className="mt-3.5 overflow-hidden rounded-[14px] border border-line bg-panel">
           <div className={`grid ${GRID} items-center gap-2 border-b border-line bg-panel2/50
                            px-3 py-3 text-[10.5px] uppercase tracking-[.1em] text-muted-foreground
                            sm:gap-3 sm:px-4`}>
@@ -541,6 +621,8 @@ export default function Markets() {
           </p>
         )}
       </Shell>
+        </div>
+      </div>
 
       <SiteFooter />
     </div>

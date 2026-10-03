@@ -17,7 +17,7 @@ import { useState, type ReactNode } from "react";
 import "@/site/serif.css";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { Shell, SiteFooter, SiteHeader, OUTLINE, PageTop, SOLID, Tiles } from "@/site/Chrome";
+import { Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import { WalletActions } from "@/components/WalletActions";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import * as api from "@/lib/api";
@@ -108,47 +108,96 @@ export default function PortfolioPage() {
       <SiteHeader here="/portfolio" actions={<WalletActions />} />
 
       <Shell className="pb-14 pt-4 sm:pt-8">
-        <PageTop title="Portfolio"
-          lede="Positions, orders, pool and backing for one wallet. Read from the chain."
-          actions={!self ? (
-            <p className="text-[13px] text-muted-foreground">
-              Viewing{" "}
-              <a href={explorer(viewing!)} target="_blank" rel="noreferrer"
-                className="n font-medium text-foreground hover:underline">{short(viewing!)}</a>.
-              Only its owner can cancel. <a href="/portfolio" className={LINK}>Yours</a>
-            </p>
-          ) : !owner ? (
-            <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly} className={SOLID}>
-              Connect wallet
-            </button>
-          ) : (
-            <>
-              {rewards && rewards.claimable > 0 && (
-                <a href="/rewards" className={SOLID}>Claim {money(rewards.claimable)}</a>
-              )}
-              <a href="/trade" className={rewards && rewards.claimable > 0 ? OUTLINE : SOLID}>Trade</a>
-              <a href="/earn" className={OUTLINE}>Earn</a>
-            </>
-          )} />
-        {api.readOnly && (
-          <p className="mt-4 text-[12.5px] text-muted-foreground">
-            This deploy has no chain behind it, so there is nothing to read.
-          </p>
-        )}
-        {note && <p className="mt-3 text-[12.5px] text-down">{note}</p>}
+        <div className="grid overflow-hidden rounded-[24px] border border-line bg-panel
+                        lg:grid-cols-[minmax(0,1fr)_440px]">
+          <section className="relative min-h-[320px] overflow-hidden">
+            {/* The same violet field /rewards carries, without the mark: this
+                page is a statement, not a pitch. */}
+            <img src="/waitlist/field.webp" alt="" aria-hidden
+              className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover
+                         opacity-45 dark:block" />
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-r
+                                        from-panel via-panel/75 via-45% to-transparent to-70%" />
 
-        <Tiles items={[
-          { k: "Account value", v: ready ? <AnimatedNumber value={total} duration={0.9} format={(n) => money(n)} /> : DASH,
-            sub: owner ? <a href={explorer(owner)} target="_blank" rel="noreferrer" className={LINK}>Verify on Solscan</a> : "" },
-          { k: "Unrealized PnL", v: ready ? signed(account!.unrealized) : DASH,
-            tone: ready ? tone(account!.unrealized) : "" , sub: ready ? `${money(posEquity)} position equity` : "" },
-          { k: "Margin in use", v: ready ? money(account!.margin) : DASH, sub: ready ? `${money(account!.usdc)} available` : "" },
-          { k: "Volume", v: rewards ? money(rewards.volume, 0) : DASH, sub: "All time" },
-          { k: "Pool (xLP)", v: ready ? money(account!.lp.value) : DASH },
-          { k: "Backing", v: ready ? money(backed) : DASH },
-          { k: "USDC to claim", v: rewards ? money(rewards.claimable) : DASH, sub: "Referrals and markets" },
-          { k: "Available USDC", v: ready ? money(account!.usdc) : DASH },
-        ]} />
+            <div className="relative flex h-full flex-col justify-center px-5 py-9
+                            sm:max-w-[min(460px,60%)] sm:px-9">
+              <h1 className="font-serif-display text-[clamp(3rem,6vw,4.5rem)] leading-none
+                             tracking-[-.025em]">
+                Portfolio
+              </h1>
+              <p className="mt-3.5 text-[15px] leading-[1.55] text-muted-foreground">
+                Positions, orders, pool and backing for one wallet. Read from the chain.
+              </p>
+
+              <div className="mt-7">
+                {!self ? (
+                  <p className="text-[13px] text-muted-foreground">
+                    Viewing{" "}
+                    <a href={explorer(viewing!)} target="_blank" rel="noreferrer"
+                      className="n font-medium text-foreground hover:underline">{short(viewing!)}</a>.
+                    Only its owner can cancel.{" "}
+                    <a href="/portfolio" className={LINK}>Yours</a>
+                  </p>
+                ) : !owner ? (
+                  <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly}
+                    className={BTN}>
+                    Connect wallet
+                  </button>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <a href="/trade" className={BTN + " inline-flex items-center"}>Trade</a>
+                    <a href="/earn" className="press inline-flex h-[48px] items-center rounded-full border
+                                                border-line px-6 text-[14px] font-medium transition-colors
+                                                hover:border-foreground/40">
+                      Earn
+                    </a>
+                  </div>
+                )}
+                {api.readOnly && (
+                  <p className="mt-4 text-[12.5px] text-muted-foreground">
+                    This deploy has no chain behind it, so there is nothing to read.
+                  </p>
+                )}
+                {note && <p className="mt-3 text-[12.5px] text-down">{note}</p>}
+              </div>
+            </div>
+          </section>
+
+          <aside className="flex min-w-0 flex-col border-t border-line bg-panel2 px-5 py-7
+                            sm:px-9 sm:py-9 lg:border-l lg:border-t-0">
+            <div className={CAPS}>Account value</div>
+            <div className="n mt-2 text-[40px] font-semibold leading-none tracking-[-.02em]">
+              {ready ? <AnimatedNumber value={total} duration={0.9} format={(n) => money(n)} /> : DASH}
+            </div>
+
+            <div className="mt-5">
+              <Stat k="Position equity">{ready ? money(posEquity) : DASH}</Stat>
+              <Stat k="Unrealized PnL">
+                {ready ? <span className={tone(account!.unrealized)}>{signed(account!.unrealized)}</span> : DASH}
+              </Stat>
+              <Stat k="Margin">{ready ? money(account!.margin) : DASH}</Stat>
+              <Stat k="Available USDC">{ready ? money(account!.usdc) : DASH}</Stat>
+              <Stat k="Pool (xLP)">{ready ? money(account!.lp.value) : DASH}</Stat>
+              <Stat k="Backing">{ready ? money(backed) : DASH}</Stat>
+              <Stat k="USDC to claim">{rewards ? money(rewards.claimable) : DASH}</Stat>
+              <Stat k="Volume">{rewards ? money(rewards.volume, 0) : DASH}</Stat>
+            </div>
+
+            <div className="mt-auto pt-6">
+              {rewards && rewards.claimable > 0 && self ? (
+                <a href="/rewards" className={`${BTN} flex w-full items-center justify-center`}>
+                  Claim on Rewards
+                </a>
+              ) : owner ? (
+                <p className="text-center text-[12px] text-muted-foreground">
+                  <a href={explorer(owner)} target="_blank" rel="noreferrer" className={LINK}>
+                    Verify on Solscan
+                  </a>
+                </p>
+              ) : null}
+            </div>
+          </aside>
+        </div>
 
         <Positions rows={positions} owner={owner} loaded={ready} />
         <Orders orders={account?.orders ?? []} owner={owner} loaded={ready}
@@ -176,7 +225,7 @@ const Stat = ({ k, children }: { k: string; children: ReactNode }) => (
 
 function Card({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section className="mt-4 overflow-hidden rounded-[16px] border border-line bg-panel">
+    <section className="mt-4 overflow-hidden rounded-[24px] border border-line bg-panel">
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-4 pt-6 sm:px-7">
         <h2 className="text-[16px] font-medium">{title}</h2>
         {aside}
