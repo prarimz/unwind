@@ -37,7 +37,7 @@ const CHECK =
 /// The settings chips at the top of the ticket: the /list pill at its
 /// smallest, outlined at rest and inverted when open.
 const CHIP =
-  "inline-flex h-8 items-center rounded-full border border-line px-3 text-[12.5px] " +
+  "inline-flex h-8 items-center rounded-[6px] border border-line px-3 text-[12.5px] " +
   "font-medium transition-colors pointer-coarse:h-9";
 
 const levText = (L: number) => `${L % 1 === 0 ? L.toFixed(0) : L.toFixed(1)}x`;
@@ -49,7 +49,7 @@ const levText = (L: number) => `${L % 1 === 0 ? L.toFixed(0) : L.toFixed(1)}x`;
  * one kind of input.
  */
 const FIELD =
-  "flex h-[44px] items-center gap-2 rounded-[12px] border border-line bg-panel2 px-3.5 " +
+  "flex h-[38px] items-center gap-2 rounded-[6px] border border-line bg-panel2 px-3 " +
   "transition-colors focus-within:border-foreground/40 pointer-coarse:h-[48px]";
 
 /// "25000.5" as "25,000.5", keeping whatever is typed after the point so a
@@ -316,7 +316,7 @@ export function OrderTicket({
         // In the rail it is an object on the page, the /list card: the page
         // scrolls it, so it has no scroller, and it is bounded on all four
         // sides rather than hung off a shared edge.
-        ? "flex flex-col overflow-hidden rounded-[14px] border-b border-line bg-panel"
+        ? "flex flex-col overflow-hidden rounded-[10px] border-b border-line bg-panel"
         : "pane-scroll flex w-[262px] flex-none flex-col border-l border-line bg-panel xl:w-[296px]"}>
 
       {/*
@@ -367,30 +367,31 @@ export function OrderTicket({
 
       {/*
        * The side is the first decision, so it leads, full width: two pills in
-       * a quiet tray. The chosen one fills with the side's own colour, the
-       * one place the ticket uses colour at all, so that "long" and "short"
-       * are told apart by more than a word before the button repeats it.
+       * a quiet tray. The chosen one is tinted in its side's colour, the one
+       * place the ticket uses colour before the button, so that "long" and
+       * "short" are told apart by more than a word.
        */}
       <div className="px-5 pt-4">
-        <Tabs value={side} onValueChange={(v) => setSide(v as "long" | "short")}>
-          <TabsList className={`grid w-full grid-cols-2 rounded-full border border-line p-1
-                                [&_[data-tabs-indicator]]:transition-colors ${side === "long"
-            ? "[&_[data-tabs-indicator]]:bg-up" : "[&_[data-tabs-indicator]]:bg-down"}`}>
-            <TabsTrigger value="long"
-              className={`w-full text-[14px] ${mobile ? "h-11" : "h-10"}`}>Long</TabsTrigger>
-            <TabsTrigger value="short"
-              className={`w-full text-[14px] ${mobile ? "h-11" : "h-10"}`}>Short</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div role="tablist" aria-label="Side"
+          className="grid grid-cols-2 gap-px overflow-hidden rounded-[6px] border border-line bg-line">
+          {(["long", "short"] as const).map((s) => (
+            <button key={s} type="button" role="tab" aria-selected={side === s} onClick={() => setSide(s)}
+              className={`text-[13.5px] font-medium transition-colors ${mobile ? "h-11" : "h-9"} ${
+                side === s
+                  ? s === "long" ? "bg-up/15 text-up" : "bg-down/15 text-down"
+                  : "bg-panel text-muted-foreground hover:text-foreground"}`}>
+              {s === "long" ? "Buy / Long" : "Sell / Short"}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="px-5 pt-5">
-        {/* The order type, as the /list tab row: pills, the chosen one
-            inverted, no tray. */}
+        {/* The order type: words on a hairline, the chosen one underlined. */}
         <Tabs value={mode} onValueChange={(v) => setMode(v as "market" | "limit")}>
           <TabsList>
-            <TabsTrigger value="market" className={mobile ? "h-10" : ""}>Market</TabsTrigger>
-            <TabsTrigger value="limit" className={mobile ? "h-10" : ""}>Limit</TabsTrigger>
+            <TabsTrigger value="market" className={mobile ? "h-9" : ""}>Market</TabsTrigger>
+            <TabsTrigger value="limit" className={mobile ? "h-9" : ""}>Limit</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -398,7 +399,7 @@ export function OrderTicket({
           // Inverted, because with nothing to trade with it is the one thing
           // this ticket can do: every other control waits on it.
           <button type="button" onClick={onFund} disabled={busy}
-            className="press mt-4 h-10 w-full rounded-full bg-foreground text-[13.5px]
+            className="press mt-4 h-10 w-full rounded-[6px] bg-foreground text-[13.5px]
                        font-medium text-background transition-opacity hover:opacity-90
                        disabled:opacity-40">
             Get test USDC
@@ -426,7 +427,7 @@ export function OrderTicket({
               placeholder={((m.bid + m.ask) / 2).toFixed(2)}
               trailing={
                 <button type="button" onClick={() => setLimitPrice(((m.bid + m.ask) / 2).toFixed(2))}
-                  className="flex-none rounded-full border border-line px-2.5 py-[3px] text-[11px]
+                  className="flex-none rounded-[5px] border border-line px-2.5 py-[3px] text-[11px]
                              font-medium text-muted-foreground transition-colors
                              hover:border-foreground/40 hover:text-foreground">
                   Mid
@@ -461,7 +462,7 @@ export function OrderTicket({
               const on = maxSize > 0 && Math.abs(pct - p) < 0.5;
               return (
                 <button key={p} type="button" disabled={maxSize <= 0} onClick={() => setPct(p)}
-                  className={`n h-7 rounded-full border text-[12px] font-medium transition-colors
+                  className={`n h-7 rounded-[6px] border text-[12px] font-medium transition-colors
                               disabled:opacity-35 pointer-coarse:h-9 ${on
                     ? "border-foreground bg-foreground text-background"
                     : "border-line text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}>
@@ -543,7 +544,7 @@ export function OrderTicket({
               exit={{ height: 0, opacity: 0 }}
               transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: EASE_OUT }}
               className="overflow-hidden">
-              <fieldset className="mt-4 min-w-0 rounded-[16px] border border-line px-4 pb-3 pt-1">
+              <fieldset className="mt-4 min-w-0 rounded-[10px] border border-line px-4 pb-3 pt-1">
                 <legend className="px-1.5 text-[13px] text-foreground">Triggers</legend>
                 <div className="-mt-0.5 mb-2 text-right text-[11.5px] text-dim">
                   mark {pos.mark.toFixed(2)}
@@ -567,7 +568,7 @@ export function OrderTicket({
                           </span>
                           <button type="button" disabled={busy}
                             onClick={() => onCancelTrigger?.(standing.slot)}
-                            className="press h-8 rounded-full border border-line px-3 text-[12px]
+                            className="press h-8 rounded-[6px] border border-line px-3 text-[12px]
                                        font-medium text-down transition-colors
                                        hover:border-foreground/40 disabled:opacity-40">
                             Cancel
@@ -583,7 +584,7 @@ export function OrderTicket({
                               : (pos.isLong ? 0.95 : 1.05))).toFixed(2)}
                             value={triggers[kind]}
                             onChange={(e) => setTriggers({ ...triggers, [kind]: e.target.value })}
-                            className="n h-9 min-w-0 flex-1 rounded-[10px] border border-line
+                            className="n h-9 min-w-0 flex-1 rounded-[6px] border border-line
                                        bg-panel2 px-3 text-[12.5px] outline-none transition-colors
                                        placeholder:text-dim focus:border-foreground/40" />
                           <button
@@ -593,7 +594,7 @@ export function OrderTicket({
                               onTrigger({ kind, triggerPrice: Number(triggers[kind]), isLong: pos.isLong });
                               setTriggers({ ...triggers, [kind]: "" });
                             }}
-                            className="press h-9 rounded-full bg-foreground px-4 text-[12.5px]
+                            className="press h-9 rounded-[6px] bg-foreground px-4 text-[12.5px]
                                        font-medium text-background transition-opacity
                                        hover:opacity-90 disabled:opacity-35">
                             Set
@@ -617,7 +618,7 @@ export function OrderTicket({
           // and red and pale on the deeper light-theme ones, so it clears
           // both without a colour of its own.
           onClick={submit}
-          className={`press mt-5 flex min-h-[48px] w-full items-center justify-center rounded-full
+          className={`press mt-5 flex min-h-[42px] w-full items-center justify-center rounded-[6px]
                       px-4 text-center font-medium transition-opacity ${warn
             ? "border border-down/30 bg-down/[.06] text-[13px] text-down"
             : `${side === "long" ? "bg-up" : "bg-down"} text-[14px] text-background
@@ -684,13 +685,13 @@ export function PoolPanel({ onPool, busy, mobile = false, bordered = false }: {
           for the way out. */}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" onClick={() => onPool("deposit", poolAmt)} disabled={busy}
-          className={`press rounded-full bg-foreground text-[13.5px] font-medium
+          className={`press rounded-[6px] bg-foreground text-[13.5px] font-medium
                       text-background transition-opacity hover:opacity-90
                       disabled:pointer-events-none disabled:opacity-35 ${
             mobile ? "h-[46px]" : "h-[44px]"}`}>
           Deposit</button>
         <button type="button" onClick={() => onPool("withdraw", poolAmt)} disabled={busy}
-          className={`press rounded-full border border-line text-[13.5px] font-medium
+          className={`press rounded-[6px] border border-line text-[13.5px] font-medium
                       transition-colors hover:border-foreground/40 disabled:opacity-35 ${
             mobile ? "h-[46px]" : "h-[44px]"}`}>
           Withdraw</button>

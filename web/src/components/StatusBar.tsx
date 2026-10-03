@@ -82,7 +82,7 @@ function News() {
   return (
     <div ref={box} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
-        className="flex h-5 items-center gap-1.5 rounded-full border border-line px-2 text-[11px]
+        className="flex h-5 items-center gap-1.5 rounded-[5px] border border-line px-2 text-[11px]
                    font-medium text-foreground transition-colors hover:bg-panel2">
         New <span className="n text-dim">{NEWS.length}</span>
       </button>

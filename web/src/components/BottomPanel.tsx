@@ -69,7 +69,7 @@ function PositionCard({
     <div className="border-b border-line px-4 py-3.5">
       <div className="flex items-center gap-2">
         <b className="text-[14px] font-medium">{r.symbol}</b>
-        <span className={`rounded-full px-2 py-px text-[11px] font-medium ${
+        <span className={`rounded-[5px] px-2 py-px text-[11px] font-medium ${
           r.isLong ? "bg-up/15 text-up" : "bg-down/15 text-down"}`}>
           {r.isLong ? "LONG" : "SHORT"} {r.leverage.toFixed(1)}x
         </span>
@@ -93,7 +93,7 @@ function PositionCard({
           Funding <span className={`n ${tone(-r.funding)}`}>{money(-r.funding)}</span>
         </span>
         <button disabled={busy} onClick={() => onClose(r.symbol)}
-          className="press ml-auto min-h-[36px] rounded-full border border-line px-4 text-[12.5px]
+          className="press ml-auto min-h-[36px] rounded-[8px] border border-line px-4 text-[12.5px]
                      font-medium transition-colors hover:border-foreground/40 active:bg-panel3
                      disabled:opacity-40">
           Close
@@ -161,7 +161,7 @@ export function BottomPanel({
     { key: "act", header: "", width: "80px",
       cell: (r) => (
         <button disabled={busy} onClick={() => onClose(r.symbol)}
-          className="press h-7 rounded-full border border-line px-3 text-[12px] font-medium
+          className="press h-7 rounded-[6px] border border-line px-3 text-[12px] font-medium
                      transition-colors hover:border-foreground/40 disabled:opacity-40">
           Close
         </button>) },
@@ -212,7 +212,7 @@ export function BottomPanel({
     { key: "act", header: "", width: "90px",
       cell: (r) => onCancelOrder && (
         <button disabled={busy} onClick={() => onCancelOrder(r)}
-          className="press h-7 rounded-full border border-line px-3 text-[12px] font-medium
+          className="press h-7 rounded-[6px] border border-line px-3 text-[12px] font-medium
                      transition-colors hover:border-foreground/40 disabled:opacity-40">
           Cancel
         </button>) },
@@ -290,17 +290,17 @@ export function BottomPanel({
       : "flex flex-none flex-col bg-panel"}>
       <Tabs value={tab} onValueChange={setTab}
         className={mobile ? "flex-none border-b border-line px-3 py-2.5"
-          : docked ? "strip-scroll flex-none border-b border-line px-3 py-2"
+          : docked ? "strip-scroll flex-none border-b border-line px-3"
           : "flex-none border-b border-line px-5 py-3 sm:px-6"}>
-        <TabsList soft={!mobile}>
-          <TabsTrigger soft={!mobile} value="positions">
+        <TabsList>
+          <TabsTrigger value="positions">
             Positions{!mobile && count(positions.length)}
           </TabsTrigger>
-          {!mobile && <TabsTrigger soft value="orders">Open Orders{count(orders.length)}</TabsTrigger>}
-          {!mobile && <TabsTrigger soft value="funding">Funding</TabsTrigger>}
-          <TabsTrigger soft={!mobile} value="history">Trade History</TabsTrigger>
-          {!mobile && <TabsTrigger soft value="fills">Order History</TabsTrigger>}
-          <TabsTrigger soft={!mobile} value="liqs">Liquidations</TabsTrigger>
+          {!mobile && <TabsTrigger value="orders">Open Orders{count(orders.length)}</TabsTrigger>}
+          {!mobile && <TabsTrigger value="funding">Funding</TabsTrigger>}
+          <TabsTrigger value="history">Trade History</TabsTrigger>
+          {!mobile && <TabsTrigger value="fills">Order History</TabsTrigger>}
+          <TabsTrigger value="liqs">Liquidations</TabsTrigger>
         </TabsList>
       </Tabs>
 

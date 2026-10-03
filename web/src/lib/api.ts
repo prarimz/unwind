@@ -339,13 +339,20 @@ export const checkCode = (code: string) =>
 /// A vault's APY over the window the server has watched it for. `apy` is null
 /// until that window is long enough to scale to a year from.
 export interface Apy { apy: number | null; hours: number }
+/// `[unix seconds, value of one share]`, oldest first, up to a week of it.
+export type Series = [number, number][];
+export interface Apys {
+  pool: Apy | null;
+  markets: Record<string, Apy>;
+  /// Absent from a server built before the tape was published.
+  series?: { pool: Series; markets: Record<string, Series> };
+}
 
 /// Nothing without a backend: an APY is a history of a chain position, and
 /// there is no chain here to have one.
-export const getApy = async () => {
-  if (!(await hasBackend())) return { pool: null, markets: {} } as
-    { pool: Apy | null; markets: Record<string, Apy> };
-  return get<{ pool: Apy | null; markets: Record<string, Apy> }>("/api/apy");
+export const getApy = async (): Promise<Apys> => {
+  if (!(await hasBackend())) return { pool: null, markets: {} };
+  return get<Apys>("/api/apy");
 };
 
 export const getTrades = async (symbol: string) => {

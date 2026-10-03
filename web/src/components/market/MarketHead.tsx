@@ -42,7 +42,7 @@ function Chip({ label, address, href }: {
 }) {
   return (
     <a href={href} target="_blank" rel="noreferrer" title={address}
-      className="flex flex-none items-center gap-2 rounded-full border border-line bg-panel
+      className="flex flex-none items-center gap-2 rounded-[8px] border border-line bg-panel
                  px-3.5 py-2 text-[12.5px] text-muted-foreground transition-colors
                  hover:text-foreground">
       <span className="text-dim">{label}</span>

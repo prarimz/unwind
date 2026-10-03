@@ -15,17 +15,16 @@
 import { useEffect, useMemo, useState } from "react";
 import "@/site/serif.css";
 import { ChevronUp, Search, Star as LucideStar } from "lucide-react";
-import { PILL_INDICATOR, Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
+import { Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
 import { WalletActions } from "@/components/WalletActions";
 import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
-import { TrendBadge } from "@/components/ui/trend-badge";
 import { Checkbox } from "@/components/motion/checkbox";
 import { Mark } from "@/components/Brand";
 import { Board } from "@/components/Board";
 import { Track } from "@/components/Track";
 import { TickerLogo } from "@/components/TickerLogo";
 import { getMarkets, useHasBackend, usePoll, type Market } from "@/lib/api";
-import { compact, pct, price } from "@/lib/format";
+import { compact, pct, price, tone } from "@/lib/format";
 
 const NONE: Market[] = [];
 const SAVED = "unwind.watchlist";
@@ -287,9 +286,9 @@ export default function Markets() {
             </span>
             <input value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Search markets" aria-label="Search markets"
-              className="relative z-10 h-[56px] w-full rounded-full border border-line
-                         bg-[#121028] pl-[46px] pr-5 text-[15px] transition-colors
-                         placeholder:text-muted-foreground focus:border-brand
+              className="relative z-10 h-[52px] w-full rounded-[10px] border border-line
+                         bg-panel pl-[46px] pr-5 text-[15px] transition-colors
+                         placeholder:text-muted-foreground focus:border-foreground/40
                          focus:outline-none sm:h-[62px] sm:pl-[52px] sm:pr-6" />
           </div>
         </Shell>
@@ -303,7 +302,7 @@ export default function Markets() {
        * own edge telling you where that surface begins.
        */}
       <div className="mx-auto w-full max-w-[1460px] px-2.5 pb-12 sm:px-4">
-        <div className="rounded-[18px] border border-line bg-background">
+        <div className="rounded-[12px] border border-line bg-background">
       <Shell className="py-8 md:py-10">
         {/*
          * The groups, as cards fronted by a market from inside them. A group
@@ -323,9 +322,9 @@ export default function Markets() {
                 <button key={g.key} type="button" disabled={empty && g.key !== "all"}
                   onClick={() => { setGroup(g.key); setQuery(""); }} aria-pressed={on}
                   className={`press relative h-[112px] w-[204px] flex-none overflow-hidden
-                              rounded-[14px] border text-left transition-colors ${
+                              rounded-[10px] border text-left transition-colors ${
                     empty && g.key !== "all" ? "cursor-default opacity-45" : ""} ${on
-                      ? "border-brand/55 bg-brand/[.09]"
+                      ? "border-foreground/40 bg-panel2"
                       : "border-line bg-panel hover:bg-panel2"}`}>
                   {/* Artwork bleeds off the top-right and is clipped by the
                       card, which is what stops it reading as an icon. */}
@@ -385,11 +384,11 @@ export default function Markets() {
            */}
           <button type="button" onClick={() => setSourcesOpen((o) => !o)}
             aria-expanded={sourcesOpen}
-            className={`press flex flex-none items-center gap-2 rounded-full border px-4 py-2
+            className={`press flex h-8 flex-none items-center gap-2 rounded-[6px] border px-3
                         text-[12.5px] font-medium transition-colors ${
               source === "all"
-                ? "border-line bg-panel text-foreground hover:border-line/80"
-                : "border-brand/50 bg-brand/[.08] text-foreground"}`}>
+                ? "border-line bg-panel text-foreground hover:border-foreground/40"
+                : "border-foreground/40 bg-panel2 text-foreground"}`}>
             {SOURCES.find((x) => x.key === source)?.label}
             <Caret up={sourcesOpen} />
           </button>
@@ -406,12 +405,12 @@ export default function Markets() {
                * width, the column clips it instead, which is the motion that
                * was wanted.
                */}
-              <div className={`flex w-max items-center gap-1 rounded-full border border-line
-                               bg-panel p-1 transition-opacity duration-200 ${
+              <div className={`flex w-max items-center gap-0.5 rounded-[6px] border border-line
+                               bg-panel p-0.5 transition-opacity duration-200 ${
                 sourcesOpen ? "opacity-100" : "opacity-0"}`}>
                 {SOURCES.map((x) => (
                   <button key={x.key} type="button" onClick={() => setSource(x.key)}
-                    className={`press whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]
+                    className={`press h-6 whitespace-nowrap rounded-[4px] px-2.5 text-[12.5px]
                                 transition-colors ${source === x.key
                       ? "bg-panel3 text-foreground"
                       : "text-muted-foreground hover:text-foreground"}`}>
@@ -429,12 +428,12 @@ export default function Markets() {
            * each. Controlled, because the header's own column buttons set the
            * same state and the two have to agree.
            */}
-          <Tabs value={sort} onValueChange={(v) => hit(v as SortKey)} variant="pill"
+          <Tabs value={sort} onValueChange={(v) => hit(v as SortKey)} variant="underline"
             className="min-w-0 max-w-full">
-            <TabsList>
+            <TabsList className="gap-0 border-0">
               {COLUMNS.map((c) => (
-                <TabsTrigger key={c.key} value={c.key} indicatorClassName={PILL_INDICATOR}
-                  className="[&_[data-tabs-label]]:text-background">
+                <TabsTrigger key={c.key} value={c.key} indicatorClassName="bg-foreground"
+                  className="min-h-[34px] px-3 text-[12.5px] font-medium">
                   {c.label}
                   {sort === c.key && <> <Caret up={!desc} /></>}
                 </TabsTrigger>
@@ -444,13 +443,13 @@ export default function Markets() {
 
           <button type="button" onClick={() => setFiltersOpen((o) => !o)}
             aria-expanded={filtersOpen} aria-controls="market-filters"
-            className={`press ml-auto flex flex-none items-center gap-2 rounded-full border
-                        px-4 py-2 text-[12.5px] font-medium transition-colors ${
+            className={`press ml-auto flex h-8 flex-none items-center gap-2 rounded-[6px] border
+                        px-3 text-[12.5px] font-medium transition-colors ${
               filtersOn > 0
-                ? "border-brand/50 bg-brand/[.08] text-foreground"
+                ? "border-foreground/40 bg-panel2 text-foreground"
                 : "border-line bg-panel text-muted-foreground hover:text-foreground"}`}>
             Filters
-            {filtersOn > 0 && <span className="n text-brand">{filtersOn}</span>}
+            {filtersOn > 0 && <span className="n text-muted-foreground">{filtersOn}</span>}
             <Caret up={filtersOpen} />
           </button>
         </div>
@@ -489,7 +488,7 @@ export default function Markets() {
          * between them. Everything past the first two numbers is dropped on a
          * phone rather than crushed: five figures at 375 is a wall.
          */}
-        <div className="mt-3.5 overflow-hidden rounded-[14px] border border-line bg-panel">
+        <div className="mt-3.5 overflow-hidden rounded-[10px] border border-line bg-panel">
           <div className={`grid ${GRID} items-center gap-2 border-b border-line bg-panel2/50
                            px-3 py-3 text-[10.5px] uppercase tracking-[.1em] text-muted-foreground
                            sm:gap-3 sm:px-4`}>
@@ -517,7 +516,7 @@ export default function Markets() {
                         : "No matches."}
                     </span>
                     {query.trim() && (
-                      <a href="/list" className="press mt-4 inline-flex h-9 items-center rounded-full
+                      <a href="/list" className="press mt-4 inline-flex h-9 items-center rounded-[6px]
                                                  bg-foreground px-4 text-[13px] font-medium
                                                  text-background hover:opacity-90">
                         List it
@@ -560,32 +559,14 @@ export default function Markets() {
                 <span className="n hidden text-right text-[13px] text-muted-foreground md:block">
                   {compact(m.oi)}
                 </span>
-                {/*
-                 * Oxygen's trend badge, wearing this venue's up and down
-                 * rather than its own emerald and red. The component states
-                 * those as ordinary utilities, so naming ours at the call
-                 * site replaces them instead of fighting them, and the two
-                 * colours stay defined in one place for the whole site.
-                 */}
-                <span className="flex justify-end">
-                  <TrendBadge trend={m.changePct < 0 ? "down" : "up"}
-                    className={`n text-[12px] ${m.changePct < 0
-                      ? "border-down/25 bg-down/15 text-down"
-                      : "border-up/25 bg-up/15 text-up"}`}>
-                    {pct(m.changePct)}
-                  </TrendBadge>
+                <span className={`n text-right text-[13px] ${tone(m.changePct)}`}>
+                  {pct(m.changePct)}
                 </span>
                 <span className="n hidden text-right text-[13px] text-muted-foreground md:block">
                   {compact(m.volume24h)}
                 </span>
-                {/* Liquidity as a chip, because it is the figure that decides
-                    whether the rest of the row is reachable in any size. */}
-                <span className="hidden justify-end md:flex">
-                  <span className="n rounded-md bg-panel3 px-2 py-1 text-[12.5px]
-                                   text-muted-foreground transition-colors
-                                   group-hover:bg-transparent">
-                    {compact(m.freeLiquidity)}
-                  </span>
+                <span className="n hidden text-right text-[13px] text-muted-foreground md:block">
+                  {compact(m.freeLiquidity)}
                 </span>
               </a>
             ) : (

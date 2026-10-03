@@ -95,7 +95,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
             <button key={m.symbol} type="button" onClick={() => onPick(m.symbol)}
               title={`${m.symbol} ${price(m.price)} ${pct(m.changePct)}`}
               aria-label={m.symbol} aria-current={m.symbol === current || undefined}
-              className={cn("grid size-9 flex-none place-items-center rounded-full transition-colors",
+              className={cn("grid size-9 flex-none place-items-center rounded-[8px] transition-colors",
                 m.symbol === current ? "bg-panel3" : "hover:bg-panel2")}>
               <TickerLogo m={m} size={24} />
             </button>
@@ -109,7 +109,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
     <aside className="flex w-[248px] flex-none flex-col overflow-hidden rounded-[10px] border-b
                       border-line bg-panel 2xl:w-[272px]">
       <div className="flex flex-none items-center gap-1.5 px-2.5 pt-2.5">
-        <label className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-full bg-panel2 pl-3 pr-1
+        <label className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-[8px] bg-panel2 pl-3 pr-1
                           text-muted-foreground focus-within:text-foreground">
           <Search size={14} className="flex-none" />
           <input value={query} onChange={(e) => setQuery(e.target.value)}
@@ -117,7 +117,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
             className="min-w-0 flex-1 bg-transparent text-[12.5px] text-foreground outline-none
                        placeholder:text-dim" />
           <button type="button" onClick={onPalette} title="Open the market palette"
-            className="flex-none rounded-full border border-line px-2 py-0.5 text-[10.5px]
+            className="flex-none rounded-[5px] border border-line px-2 py-0.5 text-[10.5px]
                        text-dim transition-colors hover:text-foreground">
             {isMac ? "⌘K" : "Ctrl K"}
           </button>
@@ -129,8 +129,8 @@ export function MarketList({ markets, current, onPick, onPalette }: {
         {GROUPS.map((g) => (
           <button key={g.key} type="button" onClick={() => { setGroup(g.key); setQuery(""); }}
             aria-pressed={g.key === group && !query}
-            className={cn("h-7 flex-none rounded-full px-2.5 text-[12px] font-medium transition-colors",
-              g.key === group && !query ? "bg-foreground text-background"
+            className={cn("h-7 flex-none rounded-[6px] px-2.5 text-[12px] font-medium transition-colors",
+              g.key === group && !query ? "bg-panel3 text-foreground"
                 : "text-muted-foreground hover:bg-panel2 hover:text-foreground")}>
             {g.label}
           </button>
@@ -168,8 +168,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-1.5">
                     <span className="truncate text-[12.5px] font-medium">{m.symbol}</span>
-                    <span className="n flex-none rounded-full border border-line px-1.5 text-[10px]
-                                     leading-[15px] text-muted-foreground">{m.maxLeverage}x</span>
+                    <span className="n flex-none text-[10.5px] text-dim">{m.maxLeverage}x</span>
                   </span>
                   <span className="block truncate text-[11px] text-dim">{m.name}</span>
                 </span>
@@ -191,7 +190,7 @@ function IconBtn({ label, onClick, children }: {
 }) {
   return (
     <button type="button" onClick={onClick} aria-label={label} title={label}
-      className="grid size-8 flex-none place-items-center rounded-full text-muted-foreground
+      className="grid size-8 flex-none place-items-center rounded-[8px] text-muted-foreground
                  transition-colors hover:bg-panel2 hover:text-foreground">
       {children}
     </button>

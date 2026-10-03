@@ -65,7 +65,7 @@ export function Nav() {
         ) : (
           <>
             <button onClick={() => setVisible(true)} disabled={connecting}
-              className="press flex h-9 items-center rounded-full bg-foreground px-4 text-[13px]
+              className="press flex h-9 items-center rounded-[8px] bg-foreground px-4 text-[13px]
                          font-medium text-background transition-opacity hover:opacity-90
                          disabled:opacity-50">
               {connecting ? "Connecting…" : "Connect"}

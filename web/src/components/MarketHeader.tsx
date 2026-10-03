@@ -94,9 +94,9 @@ export function MarketHeader({
         {/* Only a tokenised equity is an xStock; a crypto market wearing the
             badge was saying something untrue about it. */}
         {/x$/.test(m.symbol) && (
-          <span className="rounded-full border border-line px-2 py-px text-[11px] text-muted-foreground">xStock</span>
+          <span className="rounded-[5px] border border-line px-2 py-px text-[11px] text-muted-foreground">xStock</span>
         )}
-        <span className="rounded-full border border-line px-2 py-px text-[11px] font-medium">
+        <span className="rounded-[5px] border border-line px-2 py-px text-[11px] font-medium">
           {m.maxLeverage}x
         </span>
       </div>

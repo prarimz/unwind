@@ -13,7 +13,6 @@
  * unchanged, because the whole point of moving these controls here was to
  * stop the app from drawing a second header of its own.
  */
-import { Wallet } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { AddressDisplay } from "@/components/ui/address-display";
@@ -31,11 +30,11 @@ export function WalletActions() {
        * put under the most inviting target in the bar -- an address is
        * something you reach for to copy or to look up.
        */
-      <div className="flex h-[44px] items-center gap-1 rounded-full border border-line pl-4 pr-2">
+      <div className="flex h-8 items-center gap-1 rounded-[6px] border border-line pl-3 pr-1.5">
         <span className="size-1.5 flex-none rounded-full bg-up" />
         <AddressDisplay address={address} truncateChars={[4, 4]} copyable
           explorerUrl="https://solscan.io/account"
-          className="text-[14px] font-medium" />
+          className="text-[13px] font-medium" />
         <button onClick={() => disconnect()} title="Disconnect"
           aria-label="Disconnect wallet"
           className="rounded px-1.5 py-1 text-[12.5px] text-muted-foreground
@@ -49,10 +48,9 @@ export function WalletActions() {
   return (
     <>
       <button onClick={() => setVisible(true)} disabled={connecting}
-        className="press flex h-[44px] flex-none items-center gap-2 whitespace-nowrap rounded-[12px]
-                   bg-panel3 px-4 text-[14.5px] font-medium text-foreground
-                   transition-colors hover:bg-line disabled:opacity-50">
-        <Wallet size={17} strokeWidth={1.8} aria-hidden />
+        className="press flex h-8 flex-none items-center whitespace-nowrap rounded-[6px] border
+                   border-line px-3.5 text-[13px] font-medium text-foreground
+                   transition-colors hover:border-foreground/40 disabled:opacity-50">
         {connecting ? "Connecting…" : "Connect"}
       </button>
     </>
