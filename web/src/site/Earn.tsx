@@ -28,10 +28,11 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import "@/site/serif.css";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronRight, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { PILL_INDICATOR, PILL_LIST, PILL_TRIGGER, Shell, SiteFooter, SiteHeader } from "@/site/Chrome";
+import { useHasBackend } from "@/lib/api";
 import { Mark } from "@/components/Brand";
 import { TickerLogo } from "@/components/TickerLogo";
 import { WalletActions } from "@/components/WalletActions";
@@ -49,6 +50,22 @@ import { YourBacking } from "@/components/YourBacking";
 import { compact, money } from "@/lib/format";
 
 const NONE: Market[] = [];
+
+/// One grid for the header and every row, so a column cannot drift between
+/// them. Below `md` the APY, utilisation and yours columns go.
+const COLS = "grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_auto] items-center gap-4 " +
+  "md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,.8fr)_auto]";
+
+/// A figure with its caption and one line, for the row under the hero.
+export function Tile({ k, v, sub, tone = "" }: { k: string; v: ReactNode; sub?: ReactNode; tone?: string }) {
+  return (
+    <div className="rounded-[20px] border border-line bg-panel px-6 py-5">
+      <div className="text-[13px] text-muted-foreground">{k}</div>
+      <div className={`n mt-2.5 text-[28px] font-semibold leading-none tracking-[-.02em] ${tone}`}>{v}</div>
+      <div className="n mt-2 min-h-[16px] text-[12.5px] text-muted-foreground">{sub}</div>
+    </div>
+  );
+}
 const NO_BACKINGS: Backing[] = [];
 
 /*
@@ -66,7 +83,7 @@ const Stat = ({ k, children, tone = "" }: { k: string; children: ReactNode; tone
 );
 
 /// One place to put money, whichever kind it is.
-interface Vault {
+export interface Vault {
   id: string;
   kind: "pool" | "market";
   title: string;
@@ -82,10 +99,13 @@ interface Vault {
   symbol?: string;
   /// Which of the toggle's groups it belongs to.
   group: "pool" | "equities" | "crypto" | "opened";
+  /// How much of what the vault can carry is in use: the pool's utilisation,
+  /// or a market's backing against its budget.
+  util: { pct: number | null; note: string };
 }
 
 /// What the APY column says, for a vault the server has or has not watched.
-function apyCell(a: Apy | null | undefined, empty: string) {
+export function apyCell(a: Apy | null | undefined, empty: string) {
   if (!a) return { text: "–", tone: "text-dim", note: empty };
   if (a.apy == null) {
     const mins = Math.round(a.hours * 60);
@@ -102,7 +122,7 @@ function apyCell(a: Apy | null | undefined, empty: string) {
   };
 }
 
-function vaultsOf(account: Account | null | undefined, markets: Market[], backings: Backing[],
+export function vaultsOf(account: Account | null | undefined, markets: Market[], backings: Backing[],
   apy: { pool: Apy | null; markets: Record<string, Apy> } | null | undefined) {
   const out: Vault[] = [];
   const pool = account?.pool;
@@ -115,6 +135,7 @@ function vaultsOf(account: Account | null | undefined, markets: Market[], backin
       strategy: "Default",
       yours: account!.lp.value,
       group: "pool",
+      util: { pct: pool.utilization, note: `of ${pool.maxUtilization}% cap` },
     });
   }
   /*
@@ -135,6 +156,14 @@ function vaultsOf(account: Account | null | undefined, markets: Market[], backin
       strategy: "First loss",
       yours: backings.find((b) => b.symbol === m.symbol)?.value ?? 0,
       group: o ? "opened" : /x$/.test(m.symbol) ? "equities" : "crypto",
+      // An opened market's budget is its backing capped by the pool's depth,
+      // so it is measured against the depth; a listed one against its budget.
+      util: o
+        ? (o.depthUsd > 0 ? { pct: Math.min(100, (m.backingUsd / o.depthUsd) * 100), note: "of pool depth backed" }
+          : { pct: null, note: "no depth" })
+        : m.lossBudgetUsd > 0
+          ? { pct: Math.min(100, (m.backingUsd / m.lossBudgetUsd) * 100), note: "of budget backed" }
+          : { pct: null, note: "no budget" },
     });
   }
   return out;
@@ -148,7 +177,7 @@ function vaultsOf(account: Account | null | undefined, markets: Market[], backin
  * a desk expects, and a panel rising from the bottom is what a thumb can
  * reach. Escape and the backdrop both close it.
  */
-function VaultDialog({ v, account, start, onClose, onDone }: {
+export function VaultDialog({ v, account, start, onClose, onDone }: {
   v: Vault; account: Account | null | undefined; start: "in" | "out";
   onClose: () => void; onDone: () => void;
 }) {
@@ -355,7 +384,7 @@ function VaultDialog({ v, account, start, onClose, onDone }: {
 }
 
 /// The pool wears the venue's own mark; a market wears its token's.
-function VaultIcon({ v }: { v: Vault }) {
+export function VaultIcon({ v }: { v: Vault }) {
   return v.kind === "pool" || !v.market ? (
     <span className="grid size-10 flex-none place-items-center rounded-full border border-line
                      bg-panel2">
@@ -415,6 +444,8 @@ export default function Earn() {
   const deposited = vaults.reduce((a, v) => a + v.tvl, 0);
   const yours = vaults.reduce((a, v) => a + v.yours, 0);
   const poolApy = apyCell(apy?.pool, "no deposits");
+  const best = vaults.filter((v) => v.apy.value != null).sort((a, b) => b.apy.value! - a.apy.value!)[0];
+  const devnet = useHasBackend() === true;
   const table = useRef<HTMLElement>(null);
   const toMarkets = () => {
     setFilter("all");
@@ -553,6 +584,18 @@ export default function Earn() {
           </aside>
         </div>
 
+        {/* Three figures under the hero, Kurate's row: what is backed across
+            every vault, what the pool can still lend, the best rate on offer. */}
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <Tile k="Total backed" v={<AnimatedNumber value={deposited} duration={0.9} format={(n) => money(n, 0)} />}
+            sub={`${vaults.length} vaults`} />
+          <Tile k="Free liquidity" v={pool ? money(pool.free, 0) : "–"}
+            sub={pool ? `${pool.utilization.toFixed(1)}% of the pool in use` : devnet ? "Reading the chain" : "Connect to devnet"} />
+          <Tile k="Best APY" tone={best?.apy.tone}
+            v={best?.apy.value != null ? `${best.apy.value.toFixed(2)}%` : "–"}
+            sub={best?.apy.value != null ? `${best.title}, ${best.apy.note}` : "Measuring"} />
+        </div>
+
         {/* ---------------------------------------------- where yours is */}
         <YourBacking backings={backings} markets={markets}
           onAdd={(symbol) => setOpen({ id: symbol, start: "in" })}
@@ -590,14 +633,11 @@ export default function Earn() {
            * row keeps what a thumb needs to choose: which vault, how big, and
            * the way in.
            */}
-          <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_28px] items-center
-                          gap-4 border-t border-line px-5 py-3 text-[12.5px]
-                          text-muted-foreground sm:px-9
-                          md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,.8fr)_28px]">
+          <div className={`${COLS} border-t border-line px-5 py-3 text-[12.5px] text-muted-foreground sm:px-9`}>
             <span>Vault</span>
             <span>TVL</span>
             <span className="hidden md:block">APY</span>
-            <span className="hidden md:block">Strategy</span>
+            <span className="hidden md:block">Utilisation</span>
             <span className="hidden md:block">Yours</span>
             <span />
           </div>
@@ -610,32 +650,20 @@ export default function Earn() {
             </p>
           )}
           {shown.map((v) => (
-            <button key={v.id} type="button" onClick={() => setOpen({ id: v.id, start: "in" })}
-              className="group grid w-full grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_28px]
-                         items-center gap-4 border-t border-line px-5 py-4 text-left
-                         transition-colors hover:bg-panel2 sm:px-9
-                         md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,.8fr)_28px]">
-              <span className="flex min-w-0 items-center gap-3">
+            <div key={v.id} className={`${COLS} border-t border-line px-5 py-3.5 transition-colors hover:bg-panel2 sm:px-9`}>
+              <a href={`/vault?id=${encodeURIComponent(v.id)}`} className="flex min-w-0 items-center gap-3">
                 <VaultIcon v={v} />
                 <span className="min-w-0">
                   <span className="block truncate text-[14px] font-medium">{v.title}</span>
-                  <span className="block truncate text-[12.5px] text-muted-foreground">
-                    {v.subtitle}
-                  </span>
+                  <span className="block truncate text-[12.5px] text-muted-foreground">{v.subtitle}</span>
                 </span>
-              </span>
+              </a>
               <span className="min-w-0">
-                {/* Compact on a phone, where the full figure is wider than
-                    its column and would be cut to "$10,007,...": a number
-                    with its end missing is worse than a rounder one. */}
                 <span className="n block truncate text-[14px] font-semibold">
                   <AnimatedNumber value={v.tvl} duration={0.9} format={compact} className="md:hidden" />
-                  <AnimatedNumber value={v.tvl} duration={0.9} format={(n) => money(n, 0)}
-                    className="hidden md:inline" />
+                  <AnimatedNumber value={v.tvl} duration={0.9} format={(n) => money(n, 0)} className="hidden md:inline" />
                 </span>
-                <span className="n block truncate text-[12px] text-muted-foreground">
-                  {v.tvlNote}
-                </span>
+                <span className="n block truncate text-[12px] text-muted-foreground">{v.tvlNote}</span>
               </span>
               <span className="hidden min-w-0 md:block">
                 <span className={`n block truncate text-[14px] font-semibold ${v.apy.tone}`}>
@@ -644,24 +672,34 @@ export default function Earn() {
                         format={(n) => `${n < 0 ? "-" : ""}${Math.abs(n).toFixed(2)}%`} />
                     : v.apy.text}
                 </span>
-                <span className="n block truncate text-[12px] text-muted-foreground">
-                  {v.apy.note}
-                </span>
+                <span className="n block truncate text-[12px] text-muted-foreground">{v.apy.note}</span>
               </span>
-              <span className="hidden md:block">
-                <span className={`inline-block rounded-full border px-3 py-1 text-[12px] ${
-                  v.kind === "pool" ? "border-foreground/40 text-foreground"
-                    : "border-line text-muted-foreground"}`}>
-                  {v.strategy}
+              <span className="hidden min-w-0 md:block">
+                <span className="n block text-[14px] font-semibold">
+                  {v.util.pct != null ? `${v.util.pct.toFixed(1)}%` : <span className="text-dim">–</span>}
+                </span>
+                <span className="mt-1 block h-[3px] w-24 overflow-hidden rounded-full bg-panel3">
+                  <i className="block h-full rounded-full bg-foreground" style={{ width: `${v.util.pct ?? 0}%` }} />
                 </span>
               </span>
               <span className="n hidden truncate text-[13.5px] md:block">
                 {v.yours > 0 ? money(v.yours) : <span className="text-dim">–</span>}
               </span>
-              <ChevronRight size={18} strokeWidth={1.75}
-                className="justify-self-end text-dim transition-transform duration-200
-                           group-hover:translate-x-0.5 group-hover:text-foreground" />
-            </button>
+              {/* In and out from the row: a thumb on a phone gets the way in, a
+                  desk gets both, and the vault's own page is the name. */}
+              <span className="flex justify-end gap-1.5">
+                <button type="button" onClick={() => setOpen({ id: v.id, start: "in" })} disabled={!devnet}
+                  className="press h-8 rounded-full bg-foreground px-3.5 text-[12.5px] font-medium text-background
+                             transition-opacity hover:opacity-85 disabled:opacity-35">
+                  Deposit
+                </button>
+                <button type="button" onClick={() => setOpen({ id: v.id, start: "out" })} disabled={!devnet || v.yours <= 0}
+                  className="press hidden h-8 rounded-full border border-line px-3.5 text-[12.5px] font-medium
+                             transition-colors hover:border-foreground/40 disabled:opacity-35 md:inline-flex md:items-center">
+                  Withdraw
+                </button>
+              </span>
+            </div>
           ))}
 
           {/* Where the table ends, the way to make it longer: every market

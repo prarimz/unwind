@@ -201,15 +201,35 @@ export default function PortfolioPage() {
           </aside>
         </div>
 
-        <Positions rows={positions} owner={owner} loaded={ready} />
-        <Orders orders={account?.orders ?? []} owner={owner} loaded={ready}
-          canAct={canAct} busy={busy} onCancel={cancel} />
-        {/* Each card waits only for what it reads. The account read is the
-            slow one (a few round trips to the RPC), and holding the fills
-            and backings behind it left every card blank for seconds. */}
-        <Holdings account={account} backings={backings} rewards={rewards} owner={owner}
-          loaded={!!owner && (!!account || backingsRaw !== null)} />
-        <History fills={fills} account={account} owner={owner} loaded={!!owner && fillsRaw !== null} />
+        {owner ? (
+          <>
+            <Positions rows={positions} owner={owner} loaded={ready} />
+            <Orders orders={account?.orders ?? []} owner={owner} loaded={ready}
+              canAct={canAct} busy={busy} onCancel={cancel} />
+            <Holdings account={account} backings={backings} rewards={rewards} owner={owner}
+              loaded={!!owner && (!!account || backingsRaw !== null)} />
+            <History fills={fills} account={account} owner={owner} loaded={!!owner && fillsRaw !== null} />
+          </>
+        ) : (
+          /* Four cards each saying "connect a wallet" said it four times.
+             Once, with the two places to go. Connecting signs nothing. */
+          <div className="mt-4 rounded-[24px] border border-line bg-panel px-6 py-14 text-center">
+            <h2 className="text-[20px] font-medium tracking-[-.01em]">Connect a wallet to see your portfolio</h2>
+            <p className="mx-auto mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-muted-foreground">
+              What you hold, what rests in a batch, what you back and how close a position is to
+              liquidation, read from the chain. Connecting signs nothing and moves nothing.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <button type="button" onClick={() => setVisible(true)} disabled={api.readOnly} className={BTN}>
+                Connect wallet
+              </button>
+              <a href="/earn" className="press inline-flex h-[48px] items-center rounded-full border border-line px-6
+                                         text-[14px] font-medium transition-colors hover:border-foreground/40">
+                Explore Earn
+              </a>
+            </div>
+          </div>
+        )}
       </Shell>
 
       <SiteFooter />

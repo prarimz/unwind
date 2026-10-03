@@ -3100,13 +3100,25 @@ function apyOf(get: (r: TapeRow) => number | undefined) {
   return { apy: (now / get(first)! - 1) * (8760 / hours) * 100, hours };
 }
 
-app.get("/api/apy", (_req, res) => {
+app.get("/api/apy", (req, res) => {
   const markets: Record<string, { apy: number | null; hours: number }> = {};
   for (const m of Object.values(rt)) {
     const a = apyOf((r) => r.markets[m.symbol]);
     if (a) markets[m.symbol] = a;
   }
-  res.json({ pool: apyOf((r) => r.pool), markets });
+  const out: any = { pool: apyOf((r) => r.pool), markets };
+  // `?series=1` adds the tape itself, value per share over time, for the
+  // vault page's chart: at most 400 points a series, evenly thinned.
+  if (req.query.series) {
+    const step = Math.max(1, Math.ceil(tape.length / 400));
+    const rows = tape.filter((_, i) => i % step === 0 || i === tape.length - 1);
+    out.series = {
+      pool: rows.map((r) => [r.t, r.pool]),
+      markets: Object.fromEntries(Object.values(rt).map((m) =>
+        [m.symbol, rows.filter((r) => r.markets[m.symbol] != null).map((r) => [r.t, r.markets[m.symbol]])])),
+    };
+  }
+  res.json(out);
 });
 
 app.post("/api/tx/order", async (req, res) => {

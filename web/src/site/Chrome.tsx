@@ -216,6 +216,7 @@ export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
     ] },
     { title: "Resources", links: [
       { label: "Docs", href: DOCS, out: true },
+      { label: "Risk Hub", href: "/risk" },
       { label: "Source", href: REPO, out: true },
     ] },
     { title: "Follow", links: [
