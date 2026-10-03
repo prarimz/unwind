@@ -84,7 +84,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
   if (collapsed) {
     return (
       <aside className="flex w-[52px] flex-none flex-col items-center gap-1 overflow-hidden
-                        rounded-[10px] border-b border-line bg-panel py-2">
+                        bg-panel py-2">
         <IconBtn label="Show markets" onClick={toggleCollapsed}><ChevronsRight size={16} /></IconBtn>
         <IconBtn label={`Search markets (${isMac ? "Cmd" : "Ctrl"} K)`} onClick={onPalette}>
           <Search size={15} />
@@ -106,8 +106,7 @@ export function MarketList({ markets, current, onPick, onPalette }: {
   }
 
   return (
-    <aside className="flex w-[248px] flex-none flex-col overflow-hidden rounded-[10px] border-b
-                      border-line bg-panel 2xl:w-[272px]">
+    <aside className="flex w-[248px] flex-none flex-col overflow-hidden bg-panel 2xl:w-[272px]">
       <div className="flex flex-none items-center gap-1.5 px-2.5 pt-2.5">
         <label className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-full bg-panel2 pl-3 pr-1
                           text-muted-foreground focus-within:text-foreground">
