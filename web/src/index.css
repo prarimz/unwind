@@ -27,33 +27,31 @@
 :root {
   --radius: 0.5rem;
 
-  /* Deep indigo rather than near-black navy (the purple rebrand, 2026-09-26): the
-     avatar's dark corner (#140b4a) taken down until it reads as a page, not a colour.
-     Every surface, line and grey below carries the same violet bias. */
-  --background: #0c0a1c;
-  /* A violet glow falling from the top of the page; nothing in light mode. */
-  --glow: rgba(106, 77, 244, .16);
-  /* How strong the film grain over every page is (see body::after). */
-  --grain: .13;
-  --foreground: #ece9fb;
-  --card: #121028;
-  --card-foreground: #ece9fb;
-  --popover: #171432;
-  --popover-foreground: #ece9fb;
-  --primary: #6a4df4;
-  /* The brand violet is dark enough that a label on top of it wants white, not
-     the page's near-black -- ink that dark clears 4.5:1 only on a lighter violet. */
-  --primary-foreground: #ffffff;
-  --secondary: #201c42;
-  --secondary-foreground: #ece9fb;
-  --muted: #171432;
-  --muted-foreground: #9d97c0;
-  --accent: #201c42;
-  --accent-foreground: #ece9fb;
-  --destructive: #f6465d;
-  --border: #29244f;
-  --input: #29244f;
-  --ring: #6a4df4;
+  /* Neutral charcoal, the dark side of the prediction-market terminals
+     (world.xyz): a cool near-black page, graphite panels a step up from it,
+     white type, and the only colour in the green and red of a price. The
+     violet lives in the brand images now, not in the surfaces. */
+  --background: #0e1012;
+  /* No glow and next to no grain: the page is flat. */
+  --glow: transparent;
+  --grain: .04;
+  --foreground: #f2f4f6;
+  --card: #16191c;
+  --card-foreground: #f2f4f6;
+  --popover: #1c2024;
+  --popover-foreground: #f2f4f6;
+  --primary: #f2f4f6;
+  --primary-foreground: #0e1012;
+  --secondary: #22272b;
+  --secondary-foreground: #f2f4f6;
+  --muted: #1c2024;
+  --muted-foreground: #9aa3aa;
+  --accent: #22272b;
+  --accent-foreground: #f2f4f6;
+  --destructive: #ef4444;
+  --border: #272c31;
+  --input: #272c31;
+  --ring: #f2f4f6;
 }
 
 @theme inline {
@@ -100,15 +98,15 @@
  * than carrying a second copy of the palette in TypeScript.
  */
 @theme {
-  --color-panel: #121028;
-  --color-panel2: #171432;
-  --color-panel3: #201c42;
-  --color-line: #29244f;
-  --color-linesoft: #1b1838;
-  --color-dim: #6c6696;
-  --color-up: #0ecb81;
-  --color-down: #f6465d;
-  --color-brand: #6a4df4;
+  --color-panel: #16191c;
+  --color-panel2: #1d2126;
+  --color-panel3: #272c31;
+  --color-line: #272c31;
+  --color-linesoft: #1d2126;
+  --color-dim: #6b747b;
+  --color-up: #2fc46b;
+  --color-down: #ef4444;
+  --color-brand: #f2f4f6;
 
   /*
    * The road behind the search on /markets. Its tarmac is painted, not

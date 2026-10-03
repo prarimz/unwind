@@ -21,7 +21,7 @@ const KEY = "unwind.theme";
 /// Page colours the browser paints its own chrome with -- the iOS status bar
 /// and the Android address bar. They read the tag once and do not watch it,
 /// so it is set again on every change.
-const CHROME: Record<Theme, string> = { dark: "#0c0a1c", light: "#e4eaee" };
+const CHROME: Record<Theme, string> = { dark: "#0e1012", light: "#e4eaee" };
 
 const listeners = new Set<() => void>();
 
