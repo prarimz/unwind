@@ -21,9 +21,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       // The label says what the press does. `aria-pressed` would say the
       // button is "on", which is meaningless for a switch between two peers.
       aria-label={`Switch to ${next} theme`} title={`Switch to ${next} theme`}
-      className={`press flex flex-none items-center justify-center rounded-[10px] border
-                  border-line bg-panel2 text-muted-foreground transition-colors
-                  hover:border-brand hover:text-foreground ${className}`}>
+      className={`press flex flex-none items-center justify-center rounded-full bg-panel
+                  text-foreground transition-colors hover:bg-panel2 ${className}`}>
       {theme === "dark"
         ? <Sun size={16} strokeWidth={1.75} />
         : <Moon size={16} strokeWidth={1.75} />}

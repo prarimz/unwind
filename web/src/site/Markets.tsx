@@ -262,8 +262,8 @@ export default function Markets() {
         {/* The front page's violet light (waitlist/field.webp) behind the search,
             fading into the page at the foot so the table below starts clean. */}
         <img src="/waitlist/field.webp" alt="" aria-hidden
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70
-                     [mask-image:linear-gradient(to_bottom,black_45%,transparent)]" />
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-45
+                     [mask-image:linear-gradient(to_bottom,black_45%,transparent)] dark:opacity-70" />
         <Shell className="relative py-12 text-center sm:py-16 md:py-24">
           {/* The two things this page does, in the order it offers them: the
               field below, and the link beside the table under it. The second
@@ -288,8 +288,8 @@ export default function Markets() {
             <input value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Search markets" aria-label="Search markets"
               className="relative z-10 h-[56px] w-full rounded-full border border-line
-                         bg-[#121028] pl-[46px] pr-5 text-[15px] transition-colors
-                         placeholder:text-muted-foreground focus:border-brand
+                         bg-panel pl-[46px] pr-5 text-[15px] transition-colors
+                         placeholder:text-muted-foreground focus:border-foreground/40
                          focus:outline-none sm:h-[62px] sm:pl-[52px] sm:pr-6" />
           </div>
         </Shell>

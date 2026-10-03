@@ -142,37 +142,37 @@
 :root[data-theme="light"] {
   --glow: transparent;
   --grain: 0;
-  --background: #f6f7fb;
-  --foreground: #0b1018;
+  /* A pale blue-grey page with frosted white cards on it and black type:
+     the palette of the prediction-market terminals (world.xyz), cool and
+     flat, with the only colour the green and red of a price. */
+  --background: #e4eaee;
+  --foreground: #000000;
   --card: #ffffff;
-  --card-foreground: #0b1018;
+  --card-foreground: #000000;
   --popover: #ffffff;
-  --popover-foreground: #0b1018;
-  --primary: #6a4df4;
+  --popover-foreground: #000000;
+  --primary: #000000;
   --primary-foreground: #ffffff;
-  --secondary: #e7ebf3;
-  --secondary-foreground: #0b1018;
-  --muted: #eef1f7;
-  --muted-foreground: #5b6578;
-  --accent: #e7ebf3;
-  --accent-foreground: #0b1018;
-  --destructive: #cf2438;
-  --border: #dee3ed;
-  --input: #dee3ed;
-  --ring: #6a4df4;
+  --secondary: #eef2f5;
+  --secondary-foreground: #000000;
+  --muted: #eef2f5;
+  --muted-foreground: #3d484f;
+  --accent: #eef2f5;
+  --accent-foreground: #000000;
+  --destructive: #d12f2f;
+  --border: #d6dde2;
+  --input: #d6dde2;
+  --ring: #000000;
 
-  --color-panel: #ffffff;
-  --color-panel2: #f1f4f9;
-  --color-panel3: #e4e9f2;
-  --color-line: #dee3ed;
-  --color-linesoft: #edf0f6;
-  --color-dim: #767f92;
-  /* Binance green and red are tuned for a black screen; on white they are a
-     highlighter and a pink. These are the same hues taken down until small
-     figures in them are legible. */
-  --color-up: #0a7f55;
-  --color-down: #cf2438;
-  --color-brand: #6a4df4;
+  --color-panel: #f7f9fb;
+  --color-panel2: #eceff2;
+  --color-panel3: #dfe5e9;
+  --color-line: #d6dde2;
+  --color-linesoft: #e6ebef;
+  --color-dim: #94a1a8;
+  --color-up: #028639;
+  --color-down: #d12f2f;
+  --color-brand: #000000;
 
   /* The road inverts with the page: dark tarmac under a pale sky. */
   --color-road-1: #aeb6c6;
@@ -246,7 +246,7 @@
    * The site pages are the app's palette at reading sizes: the body font-size
    * is 11.5px for a trading screen, which is not a size to set prose in.
    */
-  .site { font-size: 14px; }
+  .site { font-size: 15px; }
 
   /*
    * Staggered entrance. One keyframe plus an inline `animation-delay` per

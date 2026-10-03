@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import "@/site/serif.css";
 import {
-  ArrowLeftRight, ArrowUpRight, BookOpen, ChartPie, Gift, LayoutGrid, Menu, Sprout, X,
+  ArrowLeftRight, ArrowUpRight, BookOpen, ChartPie, Gift, LayoutGrid, Menu, Search, Sprout, X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useHasBackend } from "@/lib/api";
@@ -11,11 +11,11 @@ export const REPO = "https://github.com/prarimz/unwind";
 /// The two button looks, after the /list card: an inverted pill for the one
 /// thing a page wants you to do, and an outlined pill for everything else.
 export const SOLID =
-  "press rounded-full bg-foreground px-5 py-2.5 text-[13.5px] font-medium " +
-  "text-background transition-opacity hover:opacity-90";
+  "press inline-flex h-11 items-center justify-center rounded-full bg-foreground px-7 text-[15px] " +
+  "font-medium text-background transition-opacity hover:opacity-85";
 export const OUTLINE =
-  "press rounded-full border border-line px-5 py-2.5 text-[13.5px] " +
-  "font-medium transition-colors hover:border-foreground/40";
+  "press inline-flex h-11 items-center justify-center rounded-full border border-line bg-panel px-6 " +
+  "text-[15px] font-medium transition-colors hover:bg-panel2";
 
 /// beUI's pill tabs in the house look: no track, and the sliding indicator
 /// is the same inverted pill as the buttons, with its label flipped to match.
@@ -80,7 +80,6 @@ export function SiteHeader({ here, tradeHref = "/trade", actions }: {
   // A backend that answers is the devnet venue; without one the site is a
   // read-only preview, which is still "Beta".
   const backend = useHasBackend();
-  const current = NAV.find((l) => l.href === here);
   return (
     /*
      * The bar is a row of cells rather than a strip with things floating in
@@ -103,75 +102,48 @@ export function SiteHeader({ here, tradeHref = "/trade", actions }: {
      */
     // Above everything a page lays over its hero (the search on /markets sits
     // at z-30), so the phone menu that opens under the bar is never cut.
+    /*
+     * The bar the prediction-market terminals use: the mark and a search
+     * field on the left, the wallet on the right, and under it one row of
+     * the site's parts as words with their icons, the current one in full
+     * ink. No panels, no rules: the page's pale ground is the frame.
+     */
     <header className="relative z-50 bg-background safe-t">
-      {/* Not sticky: the bar sits at the top of the page and scrolls away with it. */}
-      {/*
-       * Full bleed, and the gap between panels is the divider.
-       *
-       * The panels were inset inside a padded bar, which floats them and
-       * leaves a margin of background on every side. Run to the edges
-       * instead and let a few pixels of the page show between them: the
-       * separation is the same line a border would draw, without the bar
-       * having to be a tray holding three cards.
-       */}
-      {/* Three panels flush at the top, split by a hairline of page that flares
-          into a small curve where each panel's bottom corner rounds off. */}
-      <div className="flex h-[80px] items-stretch gap-[2px]">
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-b-[10px] border-b border-line bg-panel px-3 lg:flex-none sm:gap-2 sm:px-4">
-          <a href="/markets" aria-label="unwind"
-            className="flex flex-none items-center gap-2 pr-1 sm:pr-2">
-            {/* The glass logo on its own in a small tile; the page carries the name. */}
-            <span className="grid h-[48px] w-[48px] place-items-center rounded-[13px] border
-                             border-line bg-panel2">
-              <img src="/waitlist/logo-glass-mark.webp" alt="" className="h-[30px] w-[30px]" />
-            </span>
-            <span className="ml-1 hidden rounded-full border border-brand/40 bg-brand/10 px-2 py-[3px]
-                             text-[10.5px] font-medium leading-none tracking-[.02em] text-foreground/85 md:block">
-              {backend === true ? "Devnet" : "Beta"}
-            </span>
-          </a>
-          {current && (
-            <span className="hidden min-w-0 items-center gap-2 truncate px-2 text-[15px] font-medium
-                             min-[440px]:flex lg:hidden">
-              <current.Icon size={17} strokeWidth={1.8} aria-hidden className="flex-none text-muted-foreground" />
-              {current.label}
-            </span>
-          )}
-          <nav className="strip-scroll hidden min-w-0 items-center gap-0.5 lg:flex">
-            {NAV.map((l) => (
-              <a key={l.href} href={l.href === "/trade" ? tradeHref : l.href}
-                {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
-                aria-current={here === l.href ? "page" : undefined}
-                className={`flex h-[46px] flex-none items-center gap-2 rounded-full border px-4
-                            text-[15px] transition-colors sm:px-4 ${here === l.href
-                  ? "border-line bg-panel2 font-medium text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-                <l.Icon size={17} strokeWidth={1.8} aria-hidden />
-                {l.label}
-              </a>
-            ))}
-          </nav>
-        </div>
-
-        {/* The empty stretch is a panel of its own, which is what makes it
-            read as intended rather than as room nobody used -- but only once
-            there is enough width for it to be a panel. Squeezed to a sliver
-            between the two ends it reads as something that failed to load. */}
-        <div className="hidden min-w-0 flex-1 rounded-b-[10px] border-b border-line bg-panel lg:block" />
-
-        {/*
-         * Two quiet pills rather than one loud one. A saturated button at the
-         * end of the bar is the brightest thing on every page, including the
-         * ones whose whole job is a table of numbers.
-         */}
-        <div className="flex flex-none items-center gap-2 rounded-b-[10px] border-b border-line bg-panel px-3 sm:px-4">
+      <div className="flex h-[64px] items-center gap-4 px-4 sm:px-6">
+        <a href="/markets" aria-label="unwind" className="flex flex-none items-center gap-2.5">
+          <img src="/waitlist/logo-glass-mark.webp" alt="" className="h-8 w-8" />
+          <span className="text-[17px] font-semibold tracking-[-.02em]">unwind</span>
+        </a>
+        <a href="/markets" aria-label="Search markets"
+          className="hidden h-10 w-[300px] items-center gap-2.5 rounded-full bg-panel px-4 text-[14px]
+                     text-muted-foreground transition-colors hover:bg-panel2 md:flex lg:w-[340px]">
+          <Search size={16} strokeWidth={2} aria-hidden />
+          Search markets
+        </a>
+        <div className="ml-auto flex flex-none items-center gap-2">
           {actions}
-          {/* A bare icon at the far end, after the actions. */}
-          <ThemeToggle className="h-[40px] w-[40px] border-transparent bg-transparent" />
+          <ThemeToggle className="h-10 w-10" />
           <PageMenu here={here} tradeHref={tradeHref} className="lg:hidden" />
         </div>
       </div>
-
+      <nav className="strip-scroll hidden items-center gap-1 px-4 pb-3 sm:px-6 lg:flex" aria-label="Pages">
+        {NAV.map((l, i) => (
+          <a key={l.href} href={l.href === "/trade" ? tradeHref : l.href}
+            {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
+            aria-current={here === l.href ? "page" : undefined}
+            className={`flex h-9 flex-none items-center gap-2 rounded-full px-3.5 text-[14px]
+                        transition-colors ${i === 5 ? "ml-3 border-l border-line pl-6" : ""} ${here === l.href
+              ? "font-medium text-foreground"
+              : "text-muted-foreground hover:text-foreground"}`}>
+            <l.Icon size={16} strokeWidth={2} aria-hidden />
+            {l.label}
+          </a>
+        ))}
+        <span className="ml-auto hidden items-center gap-2 text-[13px] text-muted-foreground xl:flex">
+          <span className="size-1.5 rounded-full bg-up" />
+          {backend === true ? "Devnet" : "Beta"}
+        </span>
+      </nav>
     </header>
   );
 }

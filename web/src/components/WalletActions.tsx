@@ -13,7 +13,6 @@
  * unchanged, because the whole point of moving these controls here was to
  * stop the app from drawing a second header of its own.
  */
-import { Wallet } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { AddressDisplay } from "@/components/ui/address-display";
@@ -31,7 +30,7 @@ export function WalletActions() {
        * put under the most inviting target in the bar -- an address is
        * something you reach for to copy or to look up.
        */
-      <div className="flex h-[44px] items-center gap-1 rounded-full border border-line pl-4 pr-2">
+      <div className="flex h-11 items-center gap-1 rounded-full border border-line bg-panel pl-4 pr-2">
         <span className="size-1.5 flex-none rounded-full bg-up" />
         <AddressDisplay address={address} truncateChars={[4, 4]} copyable
           explorerUrl="https://solscan.io/account"
@@ -49,10 +48,9 @@ export function WalletActions() {
   return (
     <>
       <button onClick={() => setVisible(true)} disabled={connecting}
-        className="press flex h-[44px] flex-none items-center gap-2 whitespace-nowrap rounded-[12px]
-                   bg-panel3 px-4 text-[14.5px] font-medium text-foreground
-                   transition-colors hover:bg-line disabled:opacity-50">
-        <Wallet size={17} strokeWidth={1.8} aria-hidden />
+        className="press flex h-11 flex-none items-center whitespace-nowrap rounded-full
+                   bg-foreground px-7 text-[15px] font-medium text-background
+                   transition-opacity hover:opacity-85 disabled:opacity-50">
         {connecting ? "Connecting…" : "Connect"}
       </button>
     </>
