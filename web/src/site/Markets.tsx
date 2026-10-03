@@ -243,7 +243,7 @@ export default function Markets() {
     setDesc(true);
   };
 
-  const GRID = "grid-cols-[1.7fr_auto_1fr_.9fr] md:grid-cols-[1.9fr_auto_1fr_1.1fr_.9fr_1fr_1fr]";
+  const GRID = "grid-cols-[1.7fr_auto_1fr_.9fr] md:grid-cols-[1.6fr_auto_1fr_1.2fr_1fr_1.1fr_1fr]";
 
   return (
     <div className="site min-h-full">
@@ -490,14 +490,14 @@ export default function Markets() {
          */}
         <div className="mt-3.5 overflow-hidden rounded-[14px] border border-line bg-panel">
           <div className={`grid ${GRID} items-center gap-2 border-b border-line bg-panel2/50
-                           px-3 py-3 text-[10.5px] uppercase tracking-[.1em] text-muted-foreground
+                           px-3 py-3 text-[11px] uppercase tracking-[.06em] text-muted-foreground
                            sm:gap-3 sm:px-4`}>
             <span>Market</span>
             <span className="w-[17px]" />
             {COLUMNS.map((c) => (
               <button key={c.key} type="button" onClick={() => hit(c.key)}
-                className={`flex items-center justify-end gap-1 text-right uppercase
-                            tracking-[.1em] transition-colors hover:text-foreground ${
+                className={`flex items-center justify-end gap-1 whitespace-nowrap text-right uppercase
+                            tracking-[.06em] transition-colors hover:text-foreground ${
                   sort === c.key ? "text-foreground" : ""} ${
                   PHONE.includes(c.key) ? "" : "hidden md:flex"}`}>
                 {c.label}
