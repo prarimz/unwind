@@ -4,6 +4,8 @@ import {
   ArrowLeftRight, ArrowUpRight, BookOpen, ChartPie, Gift, LayoutGrid, Menu, Search, Sprout, X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { useTheme, type Choice } from "@/lib/theme";
 import { useHasBackend } from "@/lib/api";
 
 export const REPO = "https://github.com/prarimz/unwind";
@@ -222,58 +224,60 @@ export function SiteFooter({ tradeHref = "/trade" }: { tradeHref?: string }) {
   ];
   return (
     /*
-     * A panel in the brand's own light, like the front page: the glass logo
-     * and the line, the links in three labelled columns, then the name set
-     * big in the serif across the foot, cropped by the panel's edge.
+     * Two rows under a rule: the name and the year with the links across
+     * from them, then what this is in four sentences with the theme choice
+     * across from that. The wordmark set at 330px over a violet field was a
+     * poster stapled to the foot of every page.
      */
-    /* The navbar's treatment, mirrored: full bleed and flush with the bottom
-       of the window, rounded only on the corners that face the page. */
-    <footer className="safe-b">
-      <div className="relative overflow-hidden rounded-t-[10px] border-t border-line bg-panel">
-        <img src="/waitlist/field.webp" alt="" aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] w-full object-cover opacity-25 dark:opacity-55
-                     [mask-image:linear-gradient(to_top,black_35%,transparent)]" />
-        <div className="relative grid gap-10 px-6 pt-12 sm:px-10 md:grid-cols-[1.2fr_2fr] md:pt-16">
-          <div>
-            <img src="/waitlist/logo-glass-mark.webp" alt="" className="h-11 w-11" />
-            <p className="mt-5 max-w-[34ch] text-[15px] leading-relaxed text-foreground/85">
-              Every market clears by auction. Anyone can open one.
-            </p>
-          </div>
-          <nav className="grid grid-cols-2 gap-8 sm:grid-cols-3" aria-label="Footer">
-            {cols.map((c) => (
-              <div key={c.title}>
-                <p className="text-[11px] font-medium uppercase tracking-[.14em] text-foreground/55">{c.title}</p>
-                <ul className="mt-4 flex flex-col gap-2.5">
-                  {c.links.map((l) => (
-                    <li key={l.label}>
-                      <a href={l.href} {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
-                        className="text-[14px] text-muted-foreground transition-colors hover:text-foreground">
-                        {l.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    <footer className="mt-auto border-t border-line safe-b">
+      <Shell className="py-10">
+        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+          <a href="/markets" className="flex items-center gap-2.5 text-[15px]">
+            <img src="/waitlist/logo-glass-mark.webp" alt="" className="h-6 w-6" />
+            <span>unwind © {new Date().getFullYear()}</span>
+          </a>
+          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-[15px] text-muted-foreground" aria-label="Footer">
+            {cols.flatMap((c) => c.links).map((l) => (
+              <a key={l.label} href={l.href} {...(l.out ? { target: "_blank", rel: "noreferrer" } : {})}
+                className="transition-colors hover:text-foreground">
+                {l.label}
+              </a>
             ))}
           </nav>
         </div>
-
-        <p className="relative mt-12 max-w-[70ch] px-6 text-[11.5px] leading-relaxed text-foreground/55 sm:px-10">
-          Unaudited.{" "}
-          {backend === true && "Devnet, test USDC. "}
-          {backend === false && "Live prices, trading off. "}
-          Not investment advice.
-        </p>
-
-        {/* The name across the foot, cropped by the panel so it reads as a mark, not a line. */}
-        <div aria-hidden className="font-serif-display relative -mb-[.1em] mt-4 select-none px-4
-                                    leading-[.85] tracking-[-.035em] text-foreground/[.07] dark:text-[#e2d9ff] sm:px-8"
-          style={{ fontSize: "clamp(96px, 22vw, 330px)" }}>
-          unwind
+        <div className="mt-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
+          <p className="max-w-[76ch] text-[14px] leading-[1.6] text-muted-foreground">
+            unwind clears perpetual markets on Solana by batch auction. It never holds your
+            assets: every order is a transaction you sign, settled on chain by the program.
+            Nothing here is investment advice. Leveraged trading carries risk, including the
+            loss of what you post.{" "}
+            {backend === true && "Devnet: test USDC, nothing here has value. "}
+            {backend === false && "Live prices, trading off. "}
+            Unaudited. Tokenised stocks (SPYx, NVDAx and the rest) are not available to US persons.
+          </p>
+          <ThemeChoice />
         </div>
-      </div>
+      </Shell>
     </footer>
+  );
+}
+
+/// Light, dark or the system's, as three words in one control.
+function ThemeChoice() {
+  const { choice, setChoice } = useTheme();
+  const options: [Choice, string, typeof Sun][] = [["light", "Light", Sun], ["dark", "Dark", Moon], ["system", "System", Monitor]];
+  return (
+    <div role="radiogroup" aria-label="Theme"
+      className="flex flex-none items-center gap-0.5 rounded-full bg-panel2 p-1">
+      {options.map(([k, label, Icon]) => (
+        <button key={k} type="button" role="radio" aria-checked={choice === k} onClick={() => setChoice(k)}
+          className={`flex h-9 items-center gap-2 rounded-full px-3.5 text-[14px] transition-colors ${
+            choice === k ? "bg-panel text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+          <Icon size={15} strokeWidth={1.8} aria-hidden />
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
 

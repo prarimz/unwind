@@ -47,8 +47,10 @@
     -->
     <script>
       try {
+        var c = localStorage.getItem("unwind.theme");
         document.documentElement.dataset.theme =
-          localStorage.getItem("unwind.theme") === "dark" ? "dark" : "light";
+          c === "dark" || (c === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
+            ? "dark" : "light";
       } catch (e) {
         document.documentElement.dataset.theme = "light";
       }

@@ -21,7 +21,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/motion/tabs";
 import { TrendBadge } from "@/components/ui/trend-badge";
 import { Checkbox } from "@/components/motion/checkbox";
 import { Mark } from "@/components/Brand";
-import { Board } from "@/components/Board";
 import { Track } from "@/components/Track";
 import { TickerLogo } from "@/components/TickerLogo";
 import { getMarkets, useHasBackend, usePoll, type Market } from "@/lib/api";
@@ -592,25 +591,6 @@ export default function Markets() {
               <div key={i} className="h-[62px] border-b border-line last:border-0" />
             ))}
         </div>
-
-        {/*
-         * The part-opened markets sit under the table rather than above it.
-         * They are the most interesting thing here and the least useful: a
-         * market opened two minutes ago has no price, no depth and nothing to
-         * trade, so it cannot be what the page opens on.
-         */}
-        {markets.some((m) => m.observed) && (
-          <div className="pt-12">
-            <div className="flex flex-col gap-1 pb-4 sm:flex-row sm:items-baseline
-                            sm:justify-between sm:gap-3">
-              <h2 className="text-[13.5px] font-medium">Opening now</h2>
-              <span className="text-[12px] text-muted-foreground">
-                Live from the first price, seconds after listing
-              </span>
-            </div>
-            <Board markets={markets} />
-          </div>
-        )}
 
         {markets.length > 0 && (
           <p className="mt-10 text-[12px] text-muted-foreground">
